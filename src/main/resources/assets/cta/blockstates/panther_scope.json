@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "cta:block/panther_scope",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "cta:block/panther_scope",
+      "y": 270
+    },
+    "facing=south": {
+      "model": "cta:block/panther_scope"
+    },
+    "facing=west": {
+      "model": "cta:block/panther_scope",
+      "y": 90
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.cta.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "cta.mixins.refmap.json",
+  "mixins": [],
+  "client": [
+    "PlayerRendererMixin",
+    "LocalPlayerMixin",
+    "MouseHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "creativetab.cta_tab": "CTA Weapons",
+  
+  "tooltip.cta.missile.place": "Right-click to place",
+  "tooltip.cta.missile.launch": "Redstone signal to launch",
+  "tooltip.cta.bomb.drop": "Redstone signal to release (drops with gravity)",
+  "tooltip.cta.pickup": "Shift-click to pick up",
+  "tooltip.cta.scope.place": "Right-click to place",
+  "tooltip.cta.scope.use": "Right-click to look through",
+  "tooltip.cta.scope.pickup": "Shift-click to pick up",
+  
+  "key.categories.cta": "CTA",
+  "key.cta.scope_up": "Zoom In",
+  "key.cta.scope_down": "Zoom Out",
+  "key.cta.exit_scope": "Exit Scope",
+  
+  "entity.cta.missile": "Missile",
+  "entity.cta.scope": "Scope",
+  
+  "item.cta.panther_scope": "Panther Scope",
+  "item.cta.3m54_kalibr": "3M-54 Kalibr",
+  "item.cta.agm_88": "AGM-88 HARM",
+  "item.cta.aim_9": "AIM-9 Sidewinder",
+  "item.cta.apkws": "APKWS",
+  "item.cta.cbu_87": "CBU-87",
+  "item.cta.gbu_12": "GBU-12 Paveway II",
+  "item.cta.gbu_24": "GBU-24 Paveway III",
+  "item.cta.hellfire": "AGM-114 Hellfire",
+  "item.cta.hydra_70": "Hydra 70",
+  "item.cta.katyusha": "Katyusha Rocket",
+  "item.cta.m64": "M64 Bomb",
+  "item.cta.r_77": "R-77",
+  "item.cta.rockeye": "Mk 20 Rockeye",
+  "item.cta.snakeye": "Mk 82 Snakeye",
+  "item.cta.tow_2": "BGM-71 TOW"
+}
