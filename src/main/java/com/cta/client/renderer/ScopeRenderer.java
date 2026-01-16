@@ -33,12 +33,15 @@ public class ScopeRenderer extends EntityRenderer<ScopeEntity> {
         // Get rotation from entity
         float yaw = entity.getStoredYaw();
         float pitch = entity.getStoredPitch();
+        float roll = 0.0f; // Roll disabled per user request
         
         // Apply rotation to align model with entity facing direction
         // Model nose points -Z (North), need to rotate to face entity's yaw direction
         // Formula: 180 - yaw to face the correct direction
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0f - yaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
+        // Apply roll (bank) rotation around Z axis (forward axis)
+        poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
         
         // Scale appropriately
         poseStack.scale(1.0f, 1.0f, 1.0f);

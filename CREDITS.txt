@@ -4,4 +4,3 @@ am thankful to all of you.
 special thanks goes to the following people:
 mstr_baiter: lead model creator and idea provider
 viprogamer: texture artist
-@./m(): developer

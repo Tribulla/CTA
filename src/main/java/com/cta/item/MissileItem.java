@@ -1,5 +1,6 @@
 package com.cta.item;
 
+import com.cta.compat.VSCompat;
 import com.cta.entity.MissileEntity;
 import com.cta.registry.ModEntities;
 import net.minecraft.ChatFormatting;
@@ -49,44 +50,51 @@ public class MissileItem extends Item {
         Level level = context.getLevel();
         if (!level.isClientSide) {
             Direction face = context.getClickedFace();
+            BlockPos clickedBlockPos = context.getClickedPos();
             
-            // Calculate spawn position - grid aligned like Tallyho
+            // Calculate spawn position - place anywhere on clicked surface
             Vec3 clickPos = context.getClickLocation();
-            Vec3 spawnPos = gridify(clickPos, 0.5f);
-            
-            // Offset slightly based on clicked face to avoid being inside the block
-            spawnPos = spawnPos.add(
-                face.getStepX() * 0.3,
-                face.getStepY() * 0.3,
-                face.getStepZ() * 0.3
+            // Place directly at clicked location, offset slightly away from block
+            Vec3 localSpawnPos = clickPos.add(
+                face.getStepX() * 0.05,
+                face.getStepY() * 0.05,
+                face.getStepZ() * 0.05
             );
+            
+            // Transform spawn position to world coordinates if on a VS ship
+            Vec3 worldSpawnPos = VSCompat.toWorldCoordinates(level, clickedBlockPos, localSpawnPos);
             
             MissileEntity missile = ModEntities.MISSILE.get().create(level);
             if (missile != null) {
-                missile.setPos(spawnPos.x, spawnPos.y, spawnPos.z);
+                missile.setPos(worldSpawnPos.x, worldSpawnPos.y, worldSpawnPos.z);
                 missile.modelItem = context.getItemInHand().copy();
                 missile.modelItem.setCount(1);
                 missile.setIsBomb(this.isBomb);
                 
-                // Calculate rotation based on face direction
-                float yaw;
-                float pitch;
+                // Store the block position for VS reference when launching via redstone
+                missile.setPlacementBlockPos(clickedBlockPos);
+                // Also store the precise ship-local position for smooth ship tracking
+                missile.setShipLocalPosition(localSpawnPos);
                 
-                if (face == Direction.UP) {
-                    pitch = -90; // Point up
-                    // Use player's opposite facing so missile points away
-                    yaw = context.getRotation();
-                } else if (face == Direction.DOWN) {
-                    pitch = 90; // Point down
-                    yaw = context.getRotation();
-                } else {
-                    // Horizontal placement - point in face direction (away from block)
-                    pitch = 0;
-                    yaw = face.toYRot();
-                }
-                
-                // Use the new setStoredRotation method to properly sync
-                missile.setStoredRotation(yaw, pitch);
+                // Use player's actual look angles (world space)
+                float playerYaw = context.getPlayer() != null ? context.getPlayer().getYRot() : context.getRotation();
+                float playerPitch = context.getPlayer() != null ? context.getPlayer().getXRot() : 0;
+
+                // Convert world rotation to ship-local for storage
+                float localYaw = VSCompat.transformYawToShip(level, clickedBlockPos, playerYaw);
+                float localPitch = VSCompat.transformPitchToShip(level, clickedBlockPos, playerYaw, playerPitch);
+
+                // Snap to 6 cardinal directions in ship-local space
+                float snappedLocalYaw = snapToNearest90(localYaw);
+                float snappedLocalPitch = snapToCardinalPitch(localPitch);
+
+                missile.setShipLocalRotation(snappedLocalYaw, snappedLocalPitch);
+                missile.setShipLocalRoll(0.0f); // Roll ignored per user request
+
+                // Compute world rotation from ship-local so initial visual matches ship orientation
+                float worldYaw = VSCompat.transformYawToWorld(level, clickedBlockPos, snappedLocalYaw);
+                float worldPitch = VSCompat.transformPitchToWorld(level, clickedBlockPos, snappedLocalYaw, snappedLocalPitch);
+                missile.setStoredRotation(worldYaw, worldPitch);
                 
                 level.addFreshEntity(missile);
                 context.getItemInHand().shrink(1);
@@ -97,15 +105,32 @@ public class MissileItem extends Item {
     }
 
     /**
-     * Grid-aligns a position to the specified grid size
-     * Like Tallyho's gridify method
+     * Snaps a pitch angle to cardinal directions: 0 (horizontal), 90 (up), or -90 (down)
      */
-    public static Vec3 gridify(Vec3 pos, float gridSize) {
-        return new Vec3(
-            Math.round(pos.x / gridSize) * gridSize,
-            Math.round(pos.y / gridSize) * gridSize,
-            Math.round(pos.z / gridSize) * gridSize
-        );
+    private static float snapToCardinalPitch(float pitch) {
+        // Normalize pitch to -90 to 90 range
+        while (pitch > 90) pitch -= 180;
+        while (pitch < -90) pitch += 180;
+        
+        // Snap to nearest cardinal: down (-90), horizontal (0), or up (90)
+        if (pitch < -45) return -90;  // Down
+        if (pitch > 45) return 90;    // Up
+        return 0;                      // Horizontal
+    }
+
+    /**
+     * Snaps an angle to the nearest 90-degree increment (0, 90, 180, 270)
+     */
+    private static float snapToNearest90(float angle) {
+        // Normalize to 0-360
+        while (angle < 0) angle += 360;
+        while (angle >= 360) angle -= 360;
+        
+        // Snap to nearest 90
+        if (angle < 45 || angle >= 315) return 0;      // South
+        if (angle < 135) return 90;                     // West
+        if (angle < 225) return 180;                    // North
+        return 270;                                     // East
     }
 
     @Override

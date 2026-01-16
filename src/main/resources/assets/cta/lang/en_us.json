@@ -32,5 +32,7 @@
   "item.cta.r_77": "R-77",
   "item.cta.rockeye": "Mk 20 Rockeye",
   "item.cta.snakeye": "Mk 82 Snakeye",
-  "item.cta.tow_2": "BGM-71 TOW"
+  "item.cta.tow_2": "BGM-71 TOW",
+  
+  "block.cta.missile_rack": "Missile Rack"
 }

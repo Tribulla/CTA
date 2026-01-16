@@ -2,8 +2,6 @@ package com.cta;
 
 import com.cta.registry.ModEntities;
 import com.cta.registry.ModItems;
-import com.cta.registry.ModBlocks;
-import com.cta.registry.ModBlockEntities;
 import com.cta.registry.ModCreativeTabs;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
@@ -32,8 +30,6 @@ public class CTA {
         ModCreativeTabs.register(modEventBus);
         ModItems.register(modEventBus);
         ModEntities.register(modEventBus);
-        ModBlocks.register(modEventBus);
-        ModBlockEntities.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
 

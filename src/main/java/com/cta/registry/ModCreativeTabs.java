@@ -19,7 +19,6 @@ public class ModCreativeTabs {
                     .title(Component.translatable("creativetab.cta_tab"))
                     .displayItems((pParameters, pOutput) -> {
                         ModItems.ITEMS.getEntries().forEach(reg -> pOutput.accept(reg.get()));
-                        ModBlocks.BLOCKS.getEntries().forEach(reg -> pOutput.accept(reg.get()));
                     })
                     .build());
 

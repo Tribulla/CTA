@@ -117,9 +117,10 @@ repositories {
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
     mavenCentral()
     maven { url = 'https://maven.createmod.net' } // Create
-    maven { url = 'https://maven.tterrag.com/' } // Flywheel
+    maven { url = 'https://maven.tterrag.com/' } // Flywheel (legacy)
     maven { url = 'https://maven.valkyrienskies.org' } // VS
     maven { url = 'https://repo.spongepowered.org/repository/maven-public/' } // SpongePowered
+    maven { url = 'https://thedarkcolour.github.io/KotlinForForge/' } // Kotlin for Forge
 
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
@@ -136,11 +137,15 @@ dependencies {
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
+    // Create 6 and its dependencies (new group IDs for Flywheel/Vanillin)
     implementation fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}") { transitive = false }
-    implementation fg.deobf("com.jozufozu.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
-    implementation fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}")
+    implementation fg.deobf("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
+    implementation fg.deobf("dev.engine-room.vanillin:vanillin-forge-${minecraft_version}:${vanillin_version}")
+    
+    // Valkyrien Skies and its Kotlin dependency
     implementation fg.deobf("org.valkyrienskies:valkyrienskies-120:${vs_version}")
-    implementation "net.jodah:typetools:0.6.3"
+    implementation fg.deobf("thedarkcolour:kotlinforforge:${kotlin_forge_version}")
+
     annotationProcessor 'org.spongepowered:mixin:0.8.5'
     annotationProcessor 'com.google.code.gson:gson:2.8.9'
     annotationProcessor 'com.google.guava:guava:31.1-jre'
