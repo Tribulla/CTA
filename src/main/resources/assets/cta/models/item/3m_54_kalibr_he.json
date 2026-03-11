@@ -1,0 +1,7 @@
+{
+	"parent": "cta:item/3m54_kalibr",
+	"textures": {
+		"0": "cta:item/3m_54_kalibr_he_texture",
+		"particle": "cta:item/3m_54_kalibr_he_texture"
+	}
+}

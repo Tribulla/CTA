@@ -1,0 +1,7 @@
+{
+	"parent":"cta:item/agm_88",
+	"textures":{
+		"1":"cta:item/agm_88_heat_texture",
+		"particle":"cta:item/agm_88_heat_texture"
+	}
+}

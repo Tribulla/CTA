@@ -23,10 +23,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * CameraEntity - Based on Tallyho's CameraEntity2
- * Abstract base class for camera entities that players can view through
- */
 public abstract class CameraEntity extends Entity implements IEntityAdditionalSpawnData {
     private float BASE_YAW = 0;
     private AngleLimits ANGLE_LIMIT = new AngleLimits(0, 0, 0);
@@ -37,7 +33,6 @@ public abstract class CameraEntity extends Entity implements IEntityAdditionalSp
     protected WeakReference<ServerPlayer> currentlyViewing = new WeakReference<>(null);
     protected int timeout = 0;
     
-    // Store player's original position to restore when exiting camera view
     protected double storedPlayerX, storedPlayerY, storedPlayerZ;
     protected float storedPlayerYaw, storedPlayerPitch;
 
@@ -59,7 +54,6 @@ public abstract class CameraEntity extends Entity implements IEntityAdditionalSp
     public boolean startViewing(ServerPlayer player) {
         if (player.level() != this.level()) return false;
         
-        // Clear any previous viewer
         ServerPlayer oldViewer = this.currentlyViewing.get();
         if (oldViewer != null && oldViewer != player) {
             stopViewing(oldViewer);
@@ -67,17 +61,14 @@ public abstract class CameraEntity extends Entity implements IEntityAdditionalSp
         
         this.currentlyViewing = new WeakReference<>(player);
         
-        // Store player's original position to restore when exiting
         this.storedPlayerX = player.getX();
         this.storedPlayerY = player.getY();
         this.storedPlayerZ = player.getZ();
         this.storedPlayerYaw = player.getYRot();
         this.storedPlayerPitch = player.getXRot();
         
-        // Set camera entity's rotation to the stored/base yaw so view starts correctly oriented
-        // This prevents looking straight up when entering scope
         this.setYRot(BASE_YAW);
-        this.setXRot(0); // Start with level pitch (can be adjusted by subclasses)
+        this.setXRot(0);
         
         player.setCamera(this);
         PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new SetCameraViewPacket(this));
@@ -89,7 +80,6 @@ public abstract class CameraEntity extends Entity implements IEntityAdditionalSp
         if (this.currentlyViewing.get() == player) {
             this.currentlyViewing.clear();
             
-            // Restore player's original position before releasing camera
             player.teleportTo(this.storedPlayerX, this.storedPlayerY, this.storedPlayerZ);
             player.setYRot(this.storedPlayerYaw);
             player.setXRot(this.storedPlayerPitch);
@@ -97,19 +87,16 @@ public abstract class CameraEntity extends Entity implements IEntityAdditionalSp
             player.setCamera(player);
             PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new SetCameraViewPacket(player));
             
-            // Track recently dismounted
             RECENTLY_DISMOUNTED_PLAYERS.add(player);
-            // Remove after a short time (handled elsewhere or schedule removal)
         }
         
-        // Remove short-lived camera entities
         if (isShortLived()) {
             this.discard();
         }
     }
 
     protected boolean isShortLived() {
-        return true; // Default: camera entities are removed when player stops viewing
+        return true;
     }
 
     @Override
@@ -119,13 +106,11 @@ public abstract class CameraEntity extends Entity implements IEntityAdditionalSp
         if (!this.level().isClientSide) {
             ServerPlayer player = currentlyViewing.get();
             if (player != null) {
-                // Check if player should stop viewing
                 if (player.isDeadOrDying() || player.level() != this.level() || player.isSpectator()) {
                     stopViewing(player);
                     return;
                 }
                 
-                // Distance check - stop if too far
                 if (player.distanceToSqr(this) > 128 * 128) {
                     stopViewing(player);
                     return;
@@ -133,9 +118,8 @@ public abstract class CameraEntity extends Entity implements IEntityAdditionalSp
                 
                 timeout = 0;
             } else if (isShortLived()) {
-                // No viewer and short-lived - increment timeout
                 timeout++;
-                if (timeout > 100) { // 5 seconds
+                if (timeout > 100) {
                     this.discard();
                 }
             }
@@ -144,12 +128,8 @@ public abstract class CameraEntity extends Entity implements IEntityAdditionalSp
 
     @Override
     protected void defineSynchedData() {
-        // No synched data needed
     }
 
-    /**
-     * Turn the camera view within limits
-     */
     public void turnView(double yaw, double pitch) {
         turnView(yaw, pitch, true);
     }
@@ -159,12 +139,10 @@ public abstract class CameraEntity extends Entity implements IEntityAdditionalSp
         float newPitch = this.getXRot() + (float) pitch;
         
         if (applyLimits && ANGLE_LIMIT != null) {
-            // Apply yaw limits relative to base
             float relativeYaw = newYaw - BASE_YAW;
             relativeYaw = Math.max(-ANGLE_LIMIT.maxYaw(), Math.min(ANGLE_LIMIT.maxYaw(), relativeYaw));
             newYaw = BASE_YAW + relativeYaw;
             
-            // Apply pitch limits
             newPitch = Math.max(-ANGLE_LIMIT.maxPitch(), Math.min(ANGLE_LIMIT.maxPitch(), newPitch));
         }
         
@@ -211,12 +189,10 @@ public abstract class CameraEntity extends Entity implements IEntityAdditionalSp
 
     @Override
     protected void readAdditionalSaveData(CompoundTag compound) {
-        // Can be extended by subclasses
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag compound) {
-        // Can be extended by subclasses
     }
 
     @Override

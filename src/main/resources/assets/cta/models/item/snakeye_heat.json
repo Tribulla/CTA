@@ -1,0 +1,7 @@
+{
+	"parent":"cta:item/snakeye",
+	"textures":{
+		"2":"cta:item/snakeye_heat_texture",
+		"particle":"cta:item/snakeye_heat_texture"
+	}
+}

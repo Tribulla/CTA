@@ -1,0 +1,7 @@
+{
+	"parent": "cta:item/aim_9",
+	"textures": {
+		"2": "cta:item/aim_9_heat_texture",
+		"particle": "cta:item/aim_9_heat_texture"
+	}
+}

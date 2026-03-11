@@ -1,0 +1,7 @@
+{
+	"parent":"cta:item/rockeye",
+	"textures":{
+		"2":"cta:item/rockeye_hefrag_texture",
+		"particle":"cta:item/rockeye_hefrag_texture"
+	}
+}

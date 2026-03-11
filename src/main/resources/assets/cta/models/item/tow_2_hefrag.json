@@ -1,0 +1,7 @@
+{
+	"parent":"cta:item/tow_2",
+	"textures":{
+		"0":"cta:item/tow_2_hefrag_texture",
+		"particle":"cta:item/tow_2_hefrag_texture"
+	}
+}

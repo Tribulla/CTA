@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "cta:block/scope",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "cta:block/scope",
+      "y": 270
+    },
+    "facing=south": {
+      "model": "cta:block/scope"
+    },
+    "facing=west": {
+      "model": "cta:block/scope",
+      "y": 90
+    }
+  }
+}

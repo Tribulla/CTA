@@ -1,0 +1,7 @@
+{
+	"parent":"cta:item/katyusha",
+	"textures":{
+		"0":"cta:item/katyusha_he_texture",
+		"particle":"cta:item/katyusha_he_texture"
+	}
+}

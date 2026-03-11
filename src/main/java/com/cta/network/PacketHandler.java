@@ -18,5 +18,8 @@ public class PacketHandler {
         int id = 0;
         INSTANCE.registerMessage(id++, SetCameraViewPacket.class, SetCameraViewPacket::encode, SetCameraViewPacket::decode, SetCameraViewPacket::handle);
         INSTANCE.registerMessage(id++, StopViewingPacket.class, StopViewingPacket::encode, StopViewingPacket::decode, StopViewingPacket::handle);
+        INSTANCE.registerMessage(id++, StartScopeViewPacket.class, StartScopeViewPacket::encode, StartScopeViewPacket::decode, StartScopeViewPacket::handle);
+        INSTANCE.registerMessage(id++, SetChannelPacket.class, SetChannelPacket::encode, SetChannelPacket::decode, SetChannelPacket::handle);
+        INSTANCE.registerMessage(id++, OpenChannelScreenPacket.class, OpenChannelScreenPacket::encode, OpenChannelScreenPacket::decode, OpenChannelScreenPacket::handle);
     }
 }

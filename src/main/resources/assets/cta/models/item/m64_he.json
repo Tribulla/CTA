@@ -1,0 +1,7 @@
+{
+	"parent": "cta:item/m64",
+	"textures": {
+		"0": "cta:item/m64_he_texture",
+		"particle": "cta:item/m64_he_texture"
+	}
+}

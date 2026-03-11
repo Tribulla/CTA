@@ -12,10 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 
-/**
- * Mixin to hide the player model when viewing through a CameraEntity (scope)
- * This prevents the player's body from blocking the view
- */
 @Mixin(PlayerRenderer.class)
 public class PlayerRendererMixin {
     
@@ -26,10 +22,8 @@ public class PlayerRendererMixin {
             PoseStack poseStack, MultiBufferSource buffer, int packedLight, CallbackInfo ci) {
         Minecraft mc = Minecraft.getInstance();
         
-        // If we're viewing through a camera entity
         Entity cameraEntity = mc.getCameraEntity();
         if (cameraEntity instanceof CameraEntity) {
-            // Hide the local player (the one viewing through the scope)
             if (player == mc.player) {
                 ci.cancel();
             }

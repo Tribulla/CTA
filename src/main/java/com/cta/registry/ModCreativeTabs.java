@@ -15,7 +15,7 @@ public class ModCreativeTabs {
 
     public static final RegistryObject<CreativeModeTab> CTA_TAB = CREATIVE_MODE_TABS.register("cta_tab",
             () -> CreativeModeTab.builder()
-                    .icon(() -> new ItemStack(ModItems.AIM_9.get()))
+                    .icon(() -> new ItemStack(ModItems.AIM_9_HE.get()))
                     .title(Component.translatable("creativetab.cta_tab"))
                     .displayItems((pParameters, pOutput) -> {
                         ModItems.ITEMS.getEntries().forEach(reg -> pOutput.accept(reg.get()));

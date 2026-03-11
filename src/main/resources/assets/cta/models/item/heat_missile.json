@@ -1,0 +1,7 @@
+{
+  "credit": "CTA Heat Missile",
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "cta:item/heat_missile"
+  }
+}

@@ -1,0 +1,7 @@
+{
+	"parent":"cta:item/gbu_24",
+	"textures":{
+		"2":"cta:item/gbu_24_hefrag_texture",
+		"particle":"cta:item/gbu_24_hefrag_texture"
+	}
+}

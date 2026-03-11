@@ -1,0 +1,7 @@
+{
+	"parent":"cta:item/cbu_87",
+	"textures":{
+		"2":"cta:item/cbu_87_heat_texture",
+		"particle":"cta:item/cbu_87_heat_texture"
+	}
+}

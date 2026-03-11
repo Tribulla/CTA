@@ -1,0 +1,7 @@
+{
+	"parent":"cta:item/hellfire",
+	"textures":{
+		"3":"cta:item/hellfire_he_texture",
+		"particle":"cta:item/hellfire_he_texture"
+	}
+}

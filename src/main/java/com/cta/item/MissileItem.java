@@ -2,6 +2,7 @@ package com.cta.item;
 
 import com.cta.compat.VSCompat;
 import com.cta.entity.MissileEntity;
+import com.cta.entity.MissileEntity.WarheadType;
 import com.cta.registry.ModEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -18,31 +19,38 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 import java.util.List;
 
-/**
- * MissileItem - Based on Tallyho's MissileItem
- * Places a MissileEntity in the world when used on a block
- * Can be configured as a bomb (drops with gravity) or missile (powered flight)
- */
+
 public class MissileItem extends Item {
     public final String missileId;
-    public final boolean isBomb; // True for bombs (gravity drop), false for missiles (powered)
+    public final boolean isBomb;
+    public final WarheadType warheadType;
     
     public MissileItem(Properties properties) {
         super(properties);
         this.missileId = "";
         this.isBomb = false;
+        this.warheadType = WarheadType.HE;
     }
 
     public MissileItem(Properties properties, String missileId) {
         super(properties);
         this.missileId = missileId;
         this.isBomb = false;
+        this.warheadType = WarheadType.HE;
     }
 
     public MissileItem(Properties properties, String missileId, boolean isBomb) {
         super(properties);
         this.missileId = missileId;
         this.isBomb = isBomb;
+        this.warheadType = WarheadType.HE;
+    }
+    
+    public MissileItem(Properties properties, String missileId, boolean isBomb, WarheadType warheadType) {
+        super(properties);
+        this.missileId = missileId;
+        this.isBomb = isBomb;
+        this.warheadType = warheadType;
     }
 
     @Override
@@ -52,16 +60,13 @@ public class MissileItem extends Item {
             Direction face = context.getClickedFace();
             BlockPos clickedBlockPos = context.getClickedPos();
             
-            // Calculate spawn position - place anywhere on clicked surface
             Vec3 clickPos = context.getClickLocation();
-            // Place directly at clicked location, offset slightly away from block
             Vec3 localSpawnPos = clickPos.add(
                 face.getStepX() * 0.05,
                 face.getStepY() * 0.05,
                 face.getStepZ() * 0.05
             );
             
-            // Transform spawn position to world coordinates if on a VS ship
             Vec3 worldSpawnPos = VSCompat.toWorldCoordinates(level, clickedBlockPos, localSpawnPos);
             
             MissileEntity missile = ModEntities.MISSILE.get().create(level);
@@ -69,29 +74,25 @@ public class MissileItem extends Item {
                 missile.setPos(worldSpawnPos.x, worldSpawnPos.y, worldSpawnPos.z);
                 missile.modelItem = context.getItemInHand().copy();
                 missile.modelItem.setCount(1);
-                missile.setIsBomb(this.isBomb);
                 
-                // Store the block position for VS reference when launching via redstone
+                missile.setMissileId(this.missileId, this.warheadType);
+                
                 missile.setPlacementBlockPos(clickedBlockPos);
-                // Also store the precise ship-local position for smooth ship tracking
                 missile.setShipLocalPosition(localSpawnPos);
+                missile.setAttachedToShip(VSCompat.isOnShip(level, clickedBlockPos));
                 
-                // Use player's actual look angles (world space)
                 float playerYaw = context.getPlayer() != null ? context.getPlayer().getYRot() : context.getRotation();
                 float playerPitch = context.getPlayer() != null ? context.getPlayer().getXRot() : 0;
 
-                // Convert world rotation to ship-local for storage
                 float localYaw = VSCompat.transformYawToShip(level, clickedBlockPos, playerYaw);
                 float localPitch = VSCompat.transformPitchToShip(level, clickedBlockPos, playerYaw, playerPitch);
 
-                // Snap to 6 cardinal directions in ship-local space
                 float snappedLocalYaw = snapToNearest90(localYaw);
                 float snappedLocalPitch = snapToCardinalPitch(localPitch);
 
                 missile.setShipLocalRotation(snappedLocalYaw, snappedLocalPitch);
-                missile.setShipLocalRoll(0.0f); // Roll ignored per user request
+                missile.setShipLocalRoll(0.0f);
 
-                // Compute world rotation from ship-local so initial visual matches ship orientation
                 float worldYaw = VSCompat.transformYawToWorld(level, clickedBlockPos, snappedLocalYaw);
                 float worldPitch = VSCompat.transformPitchToWorld(level, clickedBlockPos, snappedLocalYaw, snappedLocalPitch);
                 missile.setStoredRotation(worldYaw, worldPitch);
@@ -104,38 +105,43 @@ public class MissileItem extends Item {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /**
-     * Snaps a pitch angle to cardinal directions: 0 (horizontal), 90 (up), or -90 (down)
-     */
     private static float snapToCardinalPitch(float pitch) {
-        // Normalize pitch to -90 to 90 range
         while (pitch > 90) pitch -= 180;
         while (pitch < -90) pitch += 180;
         
-        // Snap to nearest cardinal: down (-90), horizontal (0), or up (90)
-        if (pitch < -45) return -90;  // Down
-        if (pitch > 45) return 90;    // Up
-        return 0;                      // Horizontal
+        if (pitch < -45) return -90;
+        if (pitch > 45) return 90;
+        return 0;
     }
 
-    /**
-     * Snaps an angle to the nearest 90-degree increment (0, 90, 180, 270)
-     */
     private static float snapToNearest90(float angle) {
-        // Normalize to 0-360
         while (angle < 0) angle += 360;
         while (angle >= 360) angle -= 360;
         
-        // Snap to nearest 90
-        if (angle < 45 || angle >= 315) return 0;      // South
-        if (angle < 135) return 90;                     // West
-        if (angle < 225) return 180;                    // North
-        return 270;                                     // East
+        if (angle < 45 || angle >= 315) return 0;
+        if (angle < 135) return 90;
+        if (angle < 225) return 180;
+        return 270;
     }
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.cta.missile.place").withStyle(ChatFormatting.GRAY));
+        
+        switch (warheadType) {
+            case HE:
+                tooltip.add(Component.literal("HE - High Explosive").withStyle(ChatFormatting.RED));
+                break;
+            case HEAT:
+                tooltip.add(Component.literal("HEAT - Armor Penetrating").withStyle(ChatFormatting.GOLD));
+                tooltip.add(Component.literal("Passes through armor, detonates behind").withStyle(ChatFormatting.DARK_GRAY));
+                break;
+            case HEFRAG:
+                tooltip.add(Component.literal("HEFRAG - Fragmentation").withStyle(ChatFormatting.LIGHT_PURPLE));
+                tooltip.add(Component.literal("Explosion + fragment spray").withStyle(ChatFormatting.DARK_GRAY));
+                break;
+        }
+        
         if (isBomb) {
             tooltip.add(Component.translatable("tooltip.cta.bomb.drop").withStyle(ChatFormatting.YELLOW));
         } else {

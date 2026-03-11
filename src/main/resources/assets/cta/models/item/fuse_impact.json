@@ -1,0 +1,7 @@
+{
+  "credit": "CTA Impact Fuse",
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "cta:item/fuse_impact"
+  }
+}
