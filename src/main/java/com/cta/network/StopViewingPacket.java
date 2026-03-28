@@ -44,14 +44,12 @@ public class StopViewingPacket {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
             if (player != null) {
-                // If we have a specific scope position, target it directly
                 if (msg.scopePos != null) {
                     BlockEntity be = player.level().getBlockEntity(msg.scopePos);
                     if (be instanceof ScopeBlockEntity scopeBE) {
                         scopeBE.stopViewing(player);
                     }
                 } else {
-                    // Fallback: scan nearby scope blocks
                     BlockPos center = player.blockPosition();
                     for (int dx = -8; dx <= 8; dx++) {
                         for (int dy = -8; dy <= 8; dy++) {
@@ -66,7 +64,6 @@ public class StopViewingPacket {
                     }
                 }
 
-                // LEGACY: Handle old CameraEntity system
                 Entity camera = player.getCamera();
                 if (camera instanceof CameraEntity) {
                     ((CameraEntity) camera).stopViewing(player);

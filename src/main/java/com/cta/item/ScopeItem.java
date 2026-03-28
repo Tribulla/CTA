@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class ScopeItem extends BlockItem {
-    
+
     public ScopeItem(Properties properties) {
         super(ModBlocks.SCOPE_BLOCK.get(), properties);
     }
@@ -21,6 +21,7 @@ public class ScopeItem extends BlockItem {
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("tooltip.cta.scope.place").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.cta.scope.use").withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.literal("Use the Wireless Connector to bind to a cannon mount").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.cta.scope.pickup").withStyle(ChatFormatting.GRAY));
         super.appendHoverText(stack, level, tooltip, flag);
     }

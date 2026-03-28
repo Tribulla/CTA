@@ -7,9 +7,6 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-/**
- * Server → Client packet: tells the client to open the channel name GUI.
- */
 public class OpenChannelScreenPacket {
     private final BlockPos peripheralPos;
     private final BlockPos targetPos;

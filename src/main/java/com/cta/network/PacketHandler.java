@@ -21,5 +21,6 @@ public class PacketHandler {
         INSTANCE.registerMessage(id++, StartScopeViewPacket.class, StartScopeViewPacket::encode, StartScopeViewPacket::decode, StartScopeViewPacket::handle);
         INSTANCE.registerMessage(id++, SetChannelPacket.class, SetChannelPacket::encode, SetChannelPacket::decode, SetChannelPacket::handle);
         INSTANCE.registerMessage(id++, OpenChannelScreenPacket.class, OpenChannelScreenPacket::encode, OpenChannelScreenPacket::decode, OpenChannelScreenPacket::handle);
+        INSTANCE.registerMessage(id++, ScopeRangeDataPacket.class, ScopeRangeDataPacket::encode, ScopeRangeDataPacket::decode, ScopeRangeDataPacket::handle);
     }
 }

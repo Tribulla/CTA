@@ -8,9 +8,6 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-/**
- * Registry for block entities
- */
 public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = 
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, CTA.MODID);

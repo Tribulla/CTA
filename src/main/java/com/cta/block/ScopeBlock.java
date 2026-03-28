@@ -93,19 +93,10 @@ public class ScopeBlock extends BaseEntityBlock {
     
     protected InteractionResult handleWrenchInteraction(BlockState state, Level level, BlockPos pos, Player player, ScopeBlockEntity scopeBE) {
         if (player.isShiftKeyDown()) {
-            if (com.cta.compat.CBCCompat.isCBCLoaded()) {
-                BlockPos found = scopeBE.findNearbyCannonMount(5);
-                if (found != null) {
-                    scopeBE.bindToCannonMount(found);
-                    player.displayClientMessage(Component.literal("Scope bound to cannon mount"), true);
-                    return InteractionResult.SUCCESS;
-                } else if (scopeBE.getBoundCannonMount() != null) {
-                    scopeBE.bindToCannonMount(null);
-                    player.displayClientMessage(Component.literal("Scope unbound from cannon"), true);
-                    return InteractionResult.SUCCESS;
-                } else {
-                    player.displayClientMessage(Component.literal("No cannon mount found nearby"), true);
-                }
+            if (scopeBE.getBoundCannonMount() != null) {
+                scopeBE.bindToCannonMount(null);
+                player.displayClientMessage(Component.translatable("message.cta.scope.unbound"), true);
+                return InteractionResult.SUCCESS;
             }
             float newPitch = scopeBE.getScopePitch() + 15;
             if (newPitch > 90) newPitch = -90 + (newPitch - 90);

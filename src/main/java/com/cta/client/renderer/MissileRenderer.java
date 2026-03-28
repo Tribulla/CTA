@@ -66,7 +66,6 @@ public class MissileRenderer extends EntityRenderer<MissileEntity> {
 
     @Override
     public ResourceLocation getTextureLocation(MissileEntity entity) {
-        // Not used
         return new ResourceLocation("cta", "textures/item/missile.png");
     }
 }

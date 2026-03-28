@@ -9,10 +9,6 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-/**
- * Packet sent from server to client to start viewing through a scope block.
- * Sends the scope's BlockPos.
- */
 public class StartScopeViewPacket {
     private final BlockPos scopePos;
 

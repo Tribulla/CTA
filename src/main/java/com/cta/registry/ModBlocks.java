@@ -14,7 +14,6 @@ public class ModBlocks {
     public static final RegistryObject<Block> SCOPE_BLOCK = BLOCKS.register("scope",
             ScopeBlock::new);
     
-        // Keep the legacy thermal scope id mapped to the standard scope block for save compatibility.
     public static final RegistryObject<Block> THERMAL_SCOPE_BLOCK = BLOCKS.register("thermal_scope",
             ScopeBlock::new);
     

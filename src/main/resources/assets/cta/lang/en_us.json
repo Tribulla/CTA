@@ -7,6 +7,9 @@
   "tooltip.cta.pickup": "Shift-click to pick up",
   "tooltip.cta.scope.place": "Right-click to place",
   "tooltip.cta.scope.use": "Right-click to look through",
+  "tooltip.cta.scope.bind_select": "Shift-right-click a placed scope to select it",
+  "tooltip.cta.scope.bind_mount": "Then shift-right-click a cannon mount to bind it",
+  "tooltip.cta.scope.selected": "Selected scope: %s",
   "tooltip.cta.scope.pickup": "Shift-click to pick up",
   
   "key.categories.cta": "CTA",
@@ -22,6 +25,13 @@
   "entity.cta.fragment": "Fragment",
   "entity.cta.scope": "Scope",
   "entity.cta.thermal_scope": "Thermal Scope",
+
+  "message.cta.scope.selected": "Selected scope at %s",
+  "message.cta.scope.bind_missing": "Select a placed scope first",
+  "message.cta.scope.bind_cross_dimension": "Scope and cannon mount must be in the same dimension",
+  "message.cta.scope.bind_invalid": "Selected scope is no longer available",
+  "message.cta.scope.bound": "Bound scope to cannon mount at %s",
+  "message.cta.scope.unbound": "Scope unbound from cannon mount",
   
   "item.cta.panther_scope": "Panther Scope",
   

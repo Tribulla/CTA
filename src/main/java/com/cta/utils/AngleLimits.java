@@ -1,9 +1,5 @@
 package com.cta.utils;
 
-/**
- * AngleLimits - Based on Tallyho's AngleLimits
- * Defines rotation limits for camera entities
- */
 public class AngleLimits {
     private final float maxYaw;
     private final float maxPitch;
@@ -27,7 +23,6 @@ public class AngleLimits {
         return minPitch;
     }
     
-    // Compatibility aliases
     public float lowerX() {
         return minPitch;
     }

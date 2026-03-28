@@ -28,6 +28,13 @@ public class ScopeViewManager {
     private static boolean isViewing = false;
     private static final double MAX_FORWARD_DISTANCE = 16.0;
 
+    // Range data received from the server
+    private static boolean hasBoundCannon = false;
+    private static double rangeCurrentRange = -1;
+    private static int rangeLoadedCharges = 0;
+    private static int[] rangeLevels = new int[0];
+    private static double[] rangeRanges = new double[0];
+
     public static void startViewing(BlockPos scopePos) {
         if (scopePos == null)
             return;
@@ -49,7 +56,31 @@ public class ScopeViewManager {
         PacketHandler.INSTANCE.sendToServer(new StopViewingPacket(viewedScopePos));
         viewedScopePos = null;
         isViewing = false;
+        clearRangeData();
     }
+
+    public static void updateRangeData(boolean hasCannon, String shellName, double currentRange,
+                                        int loadedCharges, int[] levels, double[] ranges) {
+        hasBoundCannon = hasCannon;
+        rangeCurrentRange = currentRange;
+        rangeLoadedCharges = loadedCharges;
+        rangeLevels = levels;
+        rangeRanges = ranges;
+    }
+
+    private static void clearRangeData() {
+        hasBoundCannon = false;
+        rangeCurrentRange = -1;
+        rangeLoadedCharges = 0;
+        rangeLevels = new int[0];
+        rangeRanges = new double[0];
+    }
+
+    public static boolean hasBoundCannon() { return hasBoundCannon; }
+    public static double getCurrentRange() { return rangeCurrentRange; }
+    public static int getLoadedCharges() { return rangeLoadedCharges; }
+    public static int[] getRangeLevels() { return rangeLevels; }
+    public static double[] getRangeValues() { return rangeRanges; }
 
     public static boolean isViewingScope() {
         if (!isViewing || viewedScopePos == null)

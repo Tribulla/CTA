@@ -13,9 +13,6 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-/**
- * Client → Server packet: registers a wireless link with a channel name.
- */
 public class SetChannelPacket {
     private final BlockPos peripheralPos;
     private final BlockPos targetPos;
@@ -42,18 +39,15 @@ public class SetChannelPacket {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
 
-            // Validate proximity to target
             if (player.distanceToSqr(msg.targetPos.getX() + 0.5, msg.targetPos.getY() + 0.5, msg.targetPos.getZ() + 0.5) > 64) return;
 
             String sanitized = msg.channel.replaceAll("[^a-zA-Z0-9_\\-]", "");
             if (sanitized.isEmpty() || sanitized.length() > 32) return;
 
-            // Register the wireless link
             ServerLevel level = player.serverLevel();
             WirelessLinkSavedData data = WirelessLinkSavedData.get(level);
             data.addLink(msg.targetPos, sanitized, msg.peripheralPos);
 
-            // Clear item NBT
             ItemStack held = player.getMainHandItem();
             if (held.getItem() instanceof WirelessConnectorItem) {
                 CompoundTag tag = held.getTag();
@@ -62,7 +56,6 @@ public class SetChannelPacket {
                     tag.remove("PeripheralDim");
                 }
             } else {
-                // Check offhand
                 held = player.getOffhandItem();
                 if (held.getItem() instanceof WirelessConnectorItem) {
                     CompoundTag tag = held.getTag();
@@ -75,7 +68,6 @@ public class SetChannelPacket {
 
             player.displayClientMessage(Component.literal("Channel '" + sanitized + "' connected!"), true);
 
-            // Trigger block update near target to cause CC peripheral re-scan
             level.updateNeighborsAt(msg.targetPos, level.getBlockState(msg.targetPos).getBlock());
         });
         ctx.get().setPacketHandled(true);

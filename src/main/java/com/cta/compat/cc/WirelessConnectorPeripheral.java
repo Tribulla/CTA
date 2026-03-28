@@ -55,6 +55,18 @@ public class WirelessConnectorPeripheral implements IPeripheral {
     }
 
     @LuaFunction
+    public final Object getRemotePeripheral(String channel, int index) throws LuaException {
+        BlockPos pos = resolvePeripheralPos(channel, index);
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be == null) return null;
+        net.minecraftforge.common.util.LazyOptional<IPeripheral> capability = be.getCapability(dan200.computercraft.shared.Capabilities.CAPABILITY_PERIPHERAL);
+        if (capability.isPresent()) {
+            return capability.resolve().get();
+        }
+        return null;
+    }
+
+    @LuaFunction
     public final Map<String, Object> getPeripheralData(String channel, int index) throws LuaException {
         BlockPos pos = resolvePeripheralPos(channel, index);
         BlockEntity be = level.getBlockEntity(pos);

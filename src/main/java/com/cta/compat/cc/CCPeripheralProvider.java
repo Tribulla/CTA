@@ -18,12 +18,15 @@ public class CCPeripheralProvider implements IPeripheralProvider {
     public LazyOptional<IPeripheral> getPeripheral(@Nonnull Level world, @Nonnull BlockPos pos, @Nonnull Direction side) {
         if (!(world instanceof ServerLevel serverLevel)) return LazyOptional.empty();
 
-        if (side != Direction.DOWN) return LazyOptional.empty();
-
-        BlockPos computerPos = pos.relative(side);
         WirelessLinkSavedData data = WirelessLinkSavedData.get(serverLevel);
-        if (!data.hasLinks(computerPos)) return LazyOptional.empty();
+        BlockPos computerPos = pos.relative(side);
 
-        return LazyOptional.of(() -> new WirelessConnectorPeripheral(computerPos, serverLevel));
+        // The user linked the Computer directly
+        // This allows `peripheral.wrap("any_side")` to work when the computer itself holds the links
+        if (data.hasLinks(computerPos)) {
+            return LazyOptional.of(() -> new WirelessConnectorPeripheral(computerPos, serverLevel));
+        }
+
+        return LazyOptional.empty();
     }
 }
