@@ -67,11 +67,9 @@ public class MissileItem extends Item {
                 face.getStepZ() * 0.05
             );
             
-            Vec3 worldSpawnPos = VSCompat.toWorldCoordinates(level, clickedBlockPos, localSpawnPos);
-            
             MissileEntity missile = ModEntities.MISSILE.get().create(level);
             if (missile != null) {
-                missile.setPos(worldSpawnPos.x, worldSpawnPos.y, worldSpawnPos.z);
+                missile.setPos(localSpawnPos.x, localSpawnPos.y, localSpawnPos.z);
                 missile.modelItem = context.getItemInHand().copy();
                 missile.modelItem.setCount(1);
                 
@@ -93,9 +91,7 @@ public class MissileItem extends Item {
                 missile.setShipLocalRotation(snappedLocalYaw, snappedLocalPitch);
                 missile.setShipLocalRoll(0.0f);
 
-                float worldYaw = VSCompat.transformYawToWorld(level, clickedBlockPos, snappedLocalYaw);
-                float worldPitch = VSCompat.transformPitchToWorld(level, clickedBlockPos, snappedLocalYaw, snappedLocalPitch);
-                missile.setStoredRotation(worldYaw, worldPitch);
+                missile.setStoredRotation(snappedLocalYaw, snappedLocalPitch);
                 
                 level.addFreshEntity(missile);
                 context.getItemInHand().shrink(1);

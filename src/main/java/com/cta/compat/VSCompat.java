@@ -214,7 +214,7 @@ public class VSCompat {
         
         Vec3 worldPos = toWorldCoordinates(level, shipBlockPos, shipLocalPos);
         
-        entity.setPos(worldPos.x, worldPos.y, worldPos.z);
+        entity.setPos(shipLocalPos.x, shipLocalPos.y, shipLocalPos.z);
         return true;
     }
     

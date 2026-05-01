@@ -299,22 +299,12 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         
         if (!isDeployed() && isAttachedToShip()) {
             if (shipLocalPosition != null && placementBlockPos != null) {
-                Vec3 shipVelocity = VSCompat.getShipVelocity(this.level(), placementBlockPos);
-                
-                VSCompat.updateEntityPositionOnShip(this, placementBlockPos, shipLocalPosition);
-                
-                this.setDeltaMovement(shipVelocity);
-                
-                float worldYaw = VSCompat.transformYawToWorld(this.level(), placementBlockPos, shipLocalYaw);
-                float worldPitch = VSCompat.transformPitchToWorld(this.level(), placementBlockPos, shipLocalYaw, shipLocalPitch);
-                float worldRoll = VSCompat.transformRollToWorld(this.level(), placementBlockPos, shipLocalRoll);
-                
-                this.entityData.set(DATA_YAW, worldYaw);
-                this.entityData.set(DATA_PITCH, worldPitch);
-                this.entityData.set(DATA_ROLL, worldRoll);
-                this.setYRot(worldYaw);
-                this.setXRot(worldPitch);
-                
+                this.entityData.set(DATA_YAW, shipLocalYaw);
+                this.entityData.set(DATA_PITCH, shipLocalPitch);
+                this.entityData.set(DATA_ROLL, shipLocalRoll);
+                this.setYRot(shipLocalYaw);
+                this.setXRot(shipLocalPitch);
+
                 this.yRotO = this.getYRot();
                 this.xRotO = this.getXRot();
             }
