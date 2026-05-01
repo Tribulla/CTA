@@ -214,8 +214,12 @@ public class ScopeBlockEntity extends BlockEntity {
 
         ServerPlayer viewer = be.currentViewer.get();
         if (viewer != null) {
+            // FIX: Convert the block's Ship Space position into actual World Space 
+            // so the distance check passes properly when mounted on a moving Valkyrien Skies ship.
+            Vec3 worldPos = VSCompat.toWorldCoordinatesRobust(level, pos);
+            
             if (viewer.isDeadOrDying() || viewer.level() != level ||
-                    viewer.distanceToSqr(Vec3.atCenterOf(pos)) > 128 * 128) {
+                    viewer.distanceToSqr(worldPos) > 128 * 128) {
                 be.stopViewing(viewer);
             }
         } else if (be.beingViewed) {
