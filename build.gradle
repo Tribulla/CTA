@@ -147,7 +147,7 @@ dependencies {
     implementation fg.deobf("net.createmod.ponder:Ponder-Forge-${minecraft_version}:1.0.91")
     
     // Thermodynamica (local jar via flatDir repository - properly deobfuscated)
-    implementation fg.deobf("thermodynamica:thermodynamica:1.0.0")
+    implementation fg.deobf("thermodynamica:thermodynamica:0.3.1")
     
     // Valkyrien Skies and its Kotlin dependency
     implementation fg.deobf("org.valkyrienskies:valkyrienskies-120:${vs_version}")
