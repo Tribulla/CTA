@@ -1,6 +1,5 @@
 package com.cta.network;
 
-import com.cta.client.ScopeViewManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
@@ -10,7 +9,7 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public class StartScopeViewPacket {
-    private final BlockPos scopePos;
+    public final BlockPos scopePos;
 
     public StartScopeViewPacket(BlockPos scopePos) {
         this.scopePos = scopePos;
@@ -26,12 +25,8 @@ public class StartScopeViewPacket {
 
     public static void handle(StartScopeViewPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> handleClient(msg));
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.cta.client.ClientPacketHandler.handleStartScopeViewPacket(msg));
         });
         ctx.get().setPacketHandled(true);
-    }
-
-    private static void handleClient(StartScopeViewPacket msg) {
-        ScopeViewManager.startViewing(msg.scopePos);
     }
 }

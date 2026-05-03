@@ -1,6 +1,5 @@
 package com.cta.network;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.network.NetworkEvent;
@@ -8,7 +7,7 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public class SetCameraViewPacket {
-    private final int entityId;
+    public final int entityId;
 
     public SetCameraViewPacket(Entity entity) {
         this.entityId = entity != null ? entity.getId() : -1;
@@ -28,11 +27,7 @@ public class SetCameraViewPacket {
 
     public static void handle(SetCameraViewPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            Entity entity = null;
-            if (msg.entityId != -1) {
-                entity = Minecraft.getInstance().level.getEntity(msg.entityId);
-            }
-            Minecraft.getInstance().setCameraEntity(entity != null ? entity : Minecraft.getInstance().player);
+            net.minecraftforge.fml.DistExecutor.unsafeRunWhenOn(net.minecraftforge.api.distmarker.Dist.CLIENT, () -> () -> com.cta.client.ClientPacketHandler.handleSetCameraViewPacket(msg));
         });
         ctx.get().setPacketHandled(true);
     }

@@ -1,6 +1,5 @@
 package com.cta.network;
 
-import com.cta.client.screen.SetChannelScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
@@ -8,8 +7,8 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public class OpenChannelScreenPacket {
-    private final BlockPos peripheralPos;
-    private final BlockPos targetPos;
+    public final BlockPos peripheralPos;
+    public final BlockPos targetPos;
 
     public OpenChannelScreenPacket(BlockPos peripheralPos, BlockPos targetPos) {
         this.peripheralPos = peripheralPos;
@@ -27,7 +26,7 @@ public class OpenChannelScreenPacket {
 
     public static void handle(OpenChannelScreenPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            SetChannelScreen.open(msg.peripheralPos, msg.targetPos);
+            net.minecraftforge.fml.DistExecutor.unsafeRunWhenOn(net.minecraftforge.api.distmarker.Dist.CLIENT, () -> () -> com.cta.client.ClientPacketHandler.handleOpenChannelScreenPacket(msg));
         });
         ctx.get().setPacketHandled(true);
     }

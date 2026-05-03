@@ -1,6 +1,5 @@
 package com.cta.network;
 
-import com.cta.client.ScopeViewManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
@@ -9,12 +8,12 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public class ScopeRangeDataPacket {
-    private final boolean hasCannon;
-    private final String shellName;
-    private final double currentRange;
-    private final int loadedCharges;
-    private final int[] levels;
-    private final double[] ranges;
+    public final boolean hasCannon;
+    public final String shellName;
+    public final double currentRange;
+    public final int loadedCharges;
+    public final int[] levels;
+    public final double[] ranges;
 
     public ScopeRangeDataPacket(boolean hasCannon, String shellName, double currentRange,
                                  int loadedCharges, int[] levels, double[] ranges) {
@@ -55,13 +54,8 @@ public class ScopeRangeDataPacket {
 
     public static void handle(ScopeRangeDataPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() ->
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> handleClient(msg))
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> com.cta.client.ClientPacketHandler.handleScopeRangeDataPacket(msg))
         );
         ctx.get().setPacketHandled(true);
-    }
-
-    private static void handleClient(ScopeRangeDataPacket msg) {
-        ScopeViewManager.updateRangeData(msg.hasCannon, msg.shellName, msg.currentRange,
-                msg.loadedCharges, msg.levels, msg.ranges);
     }
 }
