@@ -57,12 +57,26 @@ public class WirelessConnectorPeripheral implements IPeripheral {
     @LuaFunction
     public final Object getRemotePeripheral(String channel, int index) throws LuaException {
         BlockPos pos = resolvePeripheralPos(channel, index);
+
+        // 1. Check if the remote block is a Scope
         BlockEntity be = level.getBlockEntity(pos);
-        if (be == null) return null;
-        net.minecraftforge.common.util.LazyOptional<IPeripheral> capability = be.getCapability(dan200.computercraft.shared.Capabilities.CAPABILITY_PERIPHERAL);
-        if (capability.isPresent()) {
-            return capability.resolve().get();
+        if (be instanceof com.cta.block.ScopeBlockEntity scopeBE) {
+            return new ScopePeripheral(scopeBE); // <-- Fixed this line!
         }
+
+        // 2. Check if the remote block is a CBC Cannon Mount
+        if (com.cta.compat.CBCCompat.isCBCLoaded() && com.cta.compat.CBCCompat.isCannonMount(level, pos)) {
+            return new CBCCannonPeripheral(level, pos);
+        }
+
+        // 3. Fallback to native CC capabilities (Chests, Monitors, other CC mods)
+        if (be != null) {
+            net.minecraftforge.common.util.LazyOptional<IPeripheral> capability = be.getCapability(dan200.computercraft.shared.Capabilities.CAPABILITY_PERIPHERAL);
+            if (capability.isPresent()) {
+                return capability.resolve().get();
+            }
+        }
+
         return null;
     }
 

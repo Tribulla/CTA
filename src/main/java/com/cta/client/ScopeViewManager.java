@@ -1,6 +1,7 @@
 package com.cta.client;
 
 import com.cta.block.ScopeBlockEntity;
+import com.cta.compat.VSCompat;
 import com.cta.network.PacketHandler;
 import com.cta.network.StopViewingPacket;
 import net.minecraft.client.CameraType;
@@ -138,15 +139,22 @@ public class ScopeViewManager {
             return;
         }
 
-        Vec3 scopePos = scopeBE.getScopeEyePosition();
-        float yaw = scopeBE.getScopeYaw();
-        float pitch = scopeBE.getScopePitch();
+        // 1. Get the local Ship Space variables from the BlockEntity
+        Vec3 localScopePos = scopeBE.getScopeEyePosition();
+        float localYaw = scopeBE.getScopeYaw();
+        float localPitch = scopeBE.getScopePitch();
+        Vec3 localLookDir = scopeBE.getLookDirection();
 
-        cameraYaw = yaw;
-        cameraPitch = pitch;
+        // 2. Convert everything into absolute World Space using VSCompat
+        Vec3 worldScopePos = VSCompat.toWorldCoordinates(level, viewedScopePos, localScopePos);
+        Vec3 worldLookDir = VSCompat.transformDirectionToWorld(level, viewedScopePos, localLookDir);
+        float worldYaw = VSCompat.transformYawToWorld(level, viewedScopePos, localYaw);
+        float worldPitch = VSCompat.transformPitchToWorld(level, viewedScopePos, localYaw, localPitch);
 
-        Vec3 lookDir = scopeBE.getLookDirection();
-        cameraPosition = findClearPosition(level, scopePos, lookDir);
+        // 3. Apply the converted coordinates to the camera
+        cameraYaw = worldYaw;
+        cameraPitch = worldPitch;
+        cameraPosition = findClearPosition(level, worldScopePos, worldLookDir);
     }
 
     private static Vec3 findClearPosition(Level level, Vec3 start, Vec3 direction) {
@@ -179,11 +187,7 @@ public class ScopeViewManager {
         }
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (player == null) {
-            stopViewing();
-            return;
-        }
-        if (mc.level == null) {
+        if (player == null || mc.level == null) {
             stopViewing();
             return;
         }
@@ -194,7 +198,10 @@ public class ScopeViewManager {
             return;
         }
 
-        if (player.distanceToSqr(Vec3.atCenterOf(viewedScopePos)) > 128 * 128) {
+        // Fix: Convert the scope's position to World Space before calculating distance!
+        Vec3 worldPos = VSCompat.toWorldCoordinatesRobust(mc.level, viewedScopePos);
+        
+        if (player.distanceToSqr(worldPos) > 128 * 128) {
             stopViewing();
             return;
         }

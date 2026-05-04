@@ -65,10 +65,6 @@ public class ScopeBlock extends BaseEntityBlock {
     
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
-        }
-        
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof ScopeBlockEntity scopeBE)) {
             return InteractionResult.FAIL;
@@ -76,8 +72,23 @@ public class ScopeBlock extends BaseEntityBlock {
         
         ItemStack heldItem = player.getItemInHand(hand);
 
+        // 1. Handle Wrench interactions first
         if (isCreateWrench(heldItem)) {
+            if (level.isClientSide) {
+                return InteractionResult.SUCCESS; // Acknowledge wrench use on the client
+            }
             return handleWrenchInteraction(state, level, pos, player, scopeBE);
+        }
+        
+        // 2. Prevent the scope from opening if the player is sneaking!
+        // This stops the glitching and allows standard Shift-Click behaviors.
+        if (player.isShiftKeyDown()) {
+            return InteractionResult.PASS;
+        }
+        
+        // 3. Open the Scope Viewer
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS; // Acknowledge scope opening on the client
         }
         
         if (player instanceof ServerPlayer serverPlayer) {

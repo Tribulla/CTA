@@ -113,12 +113,25 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    // 1. Explicitly put the official Forge Maven FIRST
+    maven {
+        name = "MinecraftForge"
+        url = "https://maven.minecraftforge.net/"
+    }
+
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
     mavenCentral()
     maven { url = 'https://maven.createmod.net' } // Create
     maven { url = 'https://maven.tterrag.com/' } // Flywheel (legacy)
-    maven { url = 'https://maven.valkyrienskies.org' } // VS
+    maven { 
+        url = 'https://maven.valkyrienskies.org' 
+        content {
+            // Force Gradle to ignore this repo for Forge/Minecraft files
+            excludeGroup 'net.minecraftforge'
+            excludeGroup 'net.minecraft'
+        }
+    }
     maven { url = 'https://repo.spongepowered.org/repository/maven-public/' } // SpongePowered
     maven { url = 'https://thedarkcolour.github.io/KotlinForForge/' } // Kotlin for Forge
     maven { url = 'https://cursemaven.com' } // CurseMaven for CBC

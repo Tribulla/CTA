@@ -21,10 +21,20 @@ public class CCPeripheralProvider implements IPeripheralProvider {
         WirelessLinkSavedData data = WirelessLinkSavedData.get(serverLevel);
         BlockPos computerPos = pos.relative(side);
 
-        // The user linked the Computer directly
-        // This allows `peripheral.wrap("any_side")` to work when the computer itself holds the links
+        // 1. Check if the computer itself holds a wireless link
         if (data.hasLinks(computerPos)) {
             return LazyOptional.of(() -> new WirelessConnectorPeripheral(computerPos, serverLevel));
+        }
+
+        // 2. Allow direct physical wired connections to Scopes
+        net.minecraft.world.level.block.entity.BlockEntity be = world.getBlockEntity(pos);
+        if (be instanceof com.cta.block.ScopeBlockEntity scopeBE) {
+            return LazyOptional.of(() -> new ScopePeripheral(scopeBE)); // <-- Fixed this line!
+        }
+
+        // 3. Allow direct physical wired connections to CBC Cannons
+        if (com.cta.compat.CBCCompat.isCBCLoaded() && com.cta.compat.CBCCompat.isCannonMount(world, pos)) {
+            return LazyOptional.of(() -> new CBCCannonPeripheral(world, pos));
         }
 
         return LazyOptional.empty();
