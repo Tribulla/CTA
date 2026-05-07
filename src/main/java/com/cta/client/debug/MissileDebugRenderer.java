@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+@OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = CTA.MODID, value = Dist.CLIENT)
 public class MissileDebugRenderer {
     

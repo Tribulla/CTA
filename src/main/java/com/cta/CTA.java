@@ -17,10 +17,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
-import com.cta.client.renderer.MissileRenderer;
-import com.cta.client.renderer.ScopeRenderer;
-import com.cta.client.renderer.FragmentRenderer;
-import net.minecraft.client.renderer.entity.EntityRenderers;
 import com.cta.network.PacketHandler;
 import net.minecraftforge.fml.ModList;
 
@@ -57,16 +53,5 @@ public class CTA {
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
-    }
-
-    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class ClientModEvents {
-        @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event) {
-            EntityRenderers.register(ModEntities.MISSILE.get(), MissileRenderer::new);
-            EntityRenderers.register(ModEntities.SCOPE.get(), ScopeRenderer::new);
-            EntityRenderers.register(ModEntities.THERMAL_SCOPE.get(), ScopeRenderer::new);
-            EntityRenderers.register(ModEntities.FRAGMENT.get(), FragmentRenderer::new);
-        }
     }
 }

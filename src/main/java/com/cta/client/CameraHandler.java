@@ -15,6 +15,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+@OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(value = Dist.CLIENT)
 public class CameraHandler {
     public static final KeyMapping KEY_SCOPE_UP = new KeyMapping("key.cta.scope_up", GLFW.GLFW_KEY_UP,

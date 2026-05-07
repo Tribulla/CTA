@@ -13,6 +13,10 @@ import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
 
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+@OnlyIn(Dist.CLIENT)
 public class MissileRenderer extends EntityRenderer<MissileEntity> {
     private final ItemRenderer itemRenderer;
 

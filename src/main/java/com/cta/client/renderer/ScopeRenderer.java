@@ -12,6 +12,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+@OnlyIn(Dist.CLIENT)
 public class ScopeRenderer extends EntityRenderer<ScopeEntity> {
     private final ItemRenderer itemRenderer;
 
