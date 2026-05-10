@@ -24,6 +24,7 @@ public class MissileItem extends Item {
     public final String missileId;
     public final boolean isBomb;
     public final WarheadType warheadType;
+    private static final Vec3 HITBOX = new Vec3(0.5, 0.5, 0.5);
     
     public MissileItem(Properties properties) {
         super(properties);
@@ -62,11 +63,11 @@ public class MissileItem extends Item {
             
             Vec3 clickPos = context.getClickLocation();
             Vec3 localSpawnPos = clickPos.add(
-                face.getStepX() * 0.05,
-                face.getStepY() * 0.05,
-                face.getStepZ() * 0.05
+                face.getStepX() * (HITBOX.x / 2) - HITBOX.x / 2,
+                face.getStepY() * (HITBOX.y / 2) - HITBOX.y / 2,
+                face.getStepZ() * (HITBOX.z / 2) - HITBOX.z / 2
             );
-            
+
             MissileEntity missile = ModEntities.MISSILE.get().create(level);
             if (missile != null) {
                 missile.setPos(localSpawnPos.x, localSpawnPos.y, localSpawnPos.z);
