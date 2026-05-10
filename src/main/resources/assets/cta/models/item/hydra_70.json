@@ -1,21 +1,16 @@
 {
+	"format_version": "1.21.11",
 	"credit": "made_with_blockbench",
 	"textures": {
 		"0": "cta:item/hydra_70_he_texture",
 		"particle": "cta:item/hydra_70_he_texture"
 	},
-	"display": {
-		"fixed": {
-			"rotation": [0, 90, 0],
-			"scale": [1, 1, 1]
-		}
-	},
 	"elements": [
 		{
 			"name": "fuselage",
-			"from": [6.5, 1, 0],
-			"to": [9.5, 4, 32],
-			"rotation": {"angle": 45, "axis": "z", "origin": [8, 2.5, 8]},
+			"from": [6.5, 4, 0],
+			"to": [9.5, 7, 32],
+			"rotation": {"angle": 45, "axis": "z", "origin": [8, 5.5, 8]},
 			"faces": {
 				"north": {"uv": [0, 0, 1.5, 1.5], "rotation": 90, "texture": "#0"},
 				"east": {"uv": [0, 16, 1.5, 0], "rotation": 90, "texture": "#0"},
@@ -27,9 +22,9 @@
 		},
 		{
 			"name": "connector",
-			"from": [6.5, 1, -3],
-			"to": [9.5, 4, 0],
-			"rotation": {"angle": 45, "axis": "z", "origin": [8, 2.5, 0]},
+			"from": [6.5, 4, -3],
+			"to": [9.5, 7, 0],
+			"rotation": {"angle": 45, "axis": "z", "origin": [8, 5.5, 0]},
 			"faces": {
 				"north": {"uv": [1.5, 1.5, 3.5, 3.5], "texture": "#0"},
 				"east": {"uv": [1.5, 1.5, 3.5, 3.5], "texture": "#0"},
@@ -41,9 +36,9 @@
 		},
 		{
 			"name": "payload",
-			"from": [6.25, 0.75, -15],
-			"to": [9.75, 4.25, -3],
-			"rotation": {"angle": 45, "axis": "z", "origin": [8, 2.5, -3]},
+			"from": [6.25, 3.75, -15],
+			"to": [9.75, 7.25, -3],
+			"rotation": {"angle": 45, "axis": "z", "origin": [8, 5.5, -3]},
 			"faces": {
 				"north": {"uv": [3.5, 1.5, 5.5, 3.5], "texture": "#0"},
 				"east": {"uv": [1.5, 3.5, 3.5, 9.5], "rotation": 90, "texture": "#0"},
@@ -55,9 +50,9 @@
 		},
 		{
 			"name": "fuze",
-			"from": [7, 1.5, -16],
-			"to": [9, 3.5, -14],
-			"rotation": {"angle": 45, "axis": "z", "origin": [8, 2.5, -5]},
+			"from": [7, 4.5, -16],
+			"to": [9, 6.5, -14],
+			"rotation": {"angle": 45, "axis": "z", "origin": [8, 5.5, -5]},
 			"faces": {
 				"north": {"uv": [4, 2, 5, 3], "texture": "#0"},
 				"east": {"uv": [5, 2, 4, 3], "texture": "#0"},
@@ -69,9 +64,9 @@
 		},
 		{
 			"name": "fin_a",
-			"from": [7.25, -2.25, 23],
-			"to": [7.25, 6.75, 31],
-			"rotation": {"angle": -45, "axis": "z", "origin": [7.75, 1.25, 8]},
+			"from": [7.25, 0.75, 23],
+			"to": [7.25, 9.75, 31],
+			"rotation": {"angle": -45, "axis": "z", "origin": [7.75, 4.25, 8]},
 			"faces": {
 				"north": {"uv": [5.5, 0, 9.5, 4.5], "texture": "#0"},
 				"east": {"uv": [9.5, 0, 5.5, 4.5], "texture": "#0"},
@@ -83,9 +78,9 @@
 		},
 		{
 			"name": "fin_b",
-			"from": [8.75, -2.25, 23],
-			"to": [8.75, 6.75, 31],
-			"rotation": {"angle": 45, "axis": "z", "origin": [8.25, 1.25, 8]},
+			"from": [8.75, 0.75, 23],
+			"to": [8.75, 9.75, 31],
+			"rotation": {"angle": 45, "axis": "z", "origin": [8.25, 4.25, 8]},
 			"faces": {
 				"north": {"uv": [5.5, 0, 9.5, 4.5], "texture": "#0"},
 				"east": {"uv": [9.5, 0, 5.5, 4.5], "texture": "#0"},
@@ -98,11 +93,11 @@
 	],
 	"display": {
 		"thirdperson_righthand": {
-			"translation": [0, 4, 1],
+			"translation": [0, 2, 1],
 			"scale": [0.55, 0.55, 0.55]
 		},
 		"thirdperson_lefthand": {
-			"translation": [0, 4, 1],
+			"translation": [0, 1.75, 1],
 			"scale": [0.55, 0.55, 0.55]
 		},
 		"firstperson_righthand": {
@@ -117,7 +112,7 @@
 			"translation": [0, 4.5, 0]
 		},
 		"gui": {
-			"rotation": [30, 225, 0],
+			"rotation": [30, -135, 0],
 			"translation": [0, 1.25, 0],
 			"scale": [0.4, 0.4, 0.4]
 		},
@@ -134,21 +129,23 @@
 		{
 			"name": "body",
 			"origin": [8, 2.5, 8],
+			"scope": 0,
 			"color": 0,
 			"children": [0]
 		},
 		{
 			"name": "warhead",
 			"origin": [8, 2.5, -5],
+			"scope": 0,
 			"color": 0,
 			"children": [1, 2, 3]
 		},
 		{
 			"name": "fins",
 			"origin": [8.25, 1.25, 8],
+			"scope": 0,
 			"color": 0,
 			"children": [4, 5]
 		}
 	]
 }
-
