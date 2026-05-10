@@ -75,9 +75,8 @@ public class MissileItem extends Item {
                 missile.modelItem.setCount(1);
                 
                 missile.setMissileId(this.missileId, this.warheadType);
-                
-                missile.setPlacementBlockPos(clickedBlockPos);
-                missile.setShipLocalPosition(localSpawnPos);
+
+                missile.setPlacementPos(localSpawnPos);
                 missile.setAttachedToShip(VSCompat.isOnShip(level, clickedBlockPos));
                 
                 float playerYaw = context.getPlayer() != null ? context.getPlayer().getYRot() : context.getRotation();

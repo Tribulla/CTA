@@ -135,11 +135,8 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
     protected double fragRange = 10.0;
     
     protected ChunkPos lastForcedChunk = null;
-    
-    @Nullable
-    protected BlockPos placementBlockPos = null;
-    @Nullable
-    protected Vec3 shipLocalPosition = null;
+
+    protected Vec3 placementPos = null;
     protected float shipLocalYaw = 0.0f;
     protected float shipLocalPitch = 0.0f;
     protected float shipLocalRoll = 0.0f;
@@ -247,18 +244,16 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         this.setYRot(yaw);
         this.setXRot(pitch);
     }
-    
-    public void setPlacementBlockPos(@Nullable BlockPos pos) {
-        this.placementBlockPos = pos;
-        if (pos != null) {
-            this.shipLocalPosition = new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-        }
+
+    public void setPlacementPos(Vec3 pos) {
+        this.placementPos = pos;
     }
-    
-    public void setShipLocalPosition(@Nullable Vec3 pos) {
-        this.shipLocalPosition = pos;
+
+    @Nullable
+    public Vec3 getPlacementPos() {
+        return placementPos;
     }
-    
+
     public void setShipLocalRotation(float yaw, float pitch) {
         this.shipLocalYaw = yaw;
         this.shipLocalPitch = pitch;
@@ -266,11 +261,6 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
     
     public void setShipLocalRoll(float roll) {
         this.shipLocalRoll = roll;
-    }
-    
-    @Nullable
-    public BlockPos getPlacementBlockPos() {
-        return this.placementBlockPos;
     }
 
     public float getStoredYaw() {
@@ -298,16 +288,14 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         super.tick();
         
         if (!isDeployed() && isAttachedToShip()) {
-            if (shipLocalPosition != null && placementBlockPos != null) {
-                this.entityData.set(DATA_YAW, shipLocalYaw);
-                this.entityData.set(DATA_PITCH, shipLocalPitch);
-                this.entityData.set(DATA_ROLL, shipLocalRoll);
-                this.setYRot(shipLocalYaw);
-                this.setXRot(shipLocalPitch);
+            this.entityData.set(DATA_YAW, shipLocalYaw);
+            this.entityData.set(DATA_PITCH, shipLocalPitch);
+            this.entityData.set(DATA_ROLL, shipLocalRoll);
+            this.setYRot(shipLocalYaw);
+            this.setXRot(shipLocalPitch);
 
-                this.yRotO = this.getYRot();
-                this.xRotO = this.getXRot();
-            }
+            this.yRotO = this.getYRot();
+            this.xRotO = this.getXRot();
         } else if (!isDeployed()) {
             this.setYRot(getStoredYaw());
             this.setXRot(getStoredPitch());
@@ -315,9 +303,10 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
             this.xRotO = this.getXRot();
         }
         
-        if (!this.level().isClientSide) {
-            boolean powered = VSCompat.hasRedstoneSignal(this.level(), this.placementBlockPos, this.position());
-            if (powered && !lastPowered && !isDeployed()) {
+        if (!this.level().isClientSide && !isDeployed()) {
+            BlockPos missileBlockPos = BlockPos.containing(placementPos);
+            boolean powered = VSCompat.hasRedstoneSignal(this.level(), missileBlockPos, this.position());
+            if (powered && !lastPowered) {
                 launch();
             }
             lastPowered = powered;
@@ -1127,38 +1116,37 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
 
     public boolean launch() {
         if (isDeployed()) return false;
-        
-        BlockPos referencePos = placementBlockPos != null ? placementBlockPos : this.blockPosition();
+
         Vec3 launchPos = this.position();
         Vec3 shipVelocity = Vec3.ZERO;
         
-        if (isAttachedToShip() && shipLocalPosition != null && placementBlockPos != null) {
-            launchPos = VSCompat.toWorldCoordinates(this.level(), placementBlockPos, shipLocalPosition);
-            
-            shipVelocity = VSCompat.getShipVelocityAtPoint(this.level(), referencePos, launchPos);
-            
-            float worldYaw = VSCompat.transformYawToWorld(this.level(), placementBlockPos, shipLocalYaw);
-            float worldPitch = VSCompat.transformPitchToWorld(this.level(), placementBlockPos, shipLocalYaw, shipLocalPitch);
-            
+        if (isAttachedToShip()) {
+            BlockPos blockPos = BlockPos.containing(placementPos);
+            launchPos = VSCompat.toWorldCoordinates(this.level(), blockPos, placementPos);
+
+            shipVelocity = VSCompat.getShipVelocityAtPoint(this.level(), blockPos, placementPos);
+
+            float worldYaw = VSCompat.transformYawToWorld(this.level(), blockPos, shipLocalYaw);
+            float worldPitch = VSCompat.transformPitchToWorld(this.level(), blockPos, shipLocalYaw, shipLocalPitch);
+
             this.setPos(launchPos.x, launchPos.y, launchPos.z);
             this.setYRot(worldYaw);
             this.setXRot(worldPitch);
             this.yRotO = worldYaw;
             this.xRotO = worldPitch;
-            
+
             this.entityData.set(DATA_YAW, worldYaw);
             this.entityData.set(DATA_PITCH, worldPitch);
         }
-        
+
         this.setAttachedToShip(false);
-        this.shipLocalPosition = null;
         this.entityData.set(DATA_DEPLOYED, true);
         this.ticksSinceLaunch = 0;
-        
+
         this.launchWorldPos = launchPos;
-        
+
         Vec3 forward = getForwardVector();
-        
+
         if (isBomb) {
             Vec3 horizontalShipVel = new Vec3(shipVelocity.x, 0, shipVelocity.z);
             this.setDeltaMovement(horizontalShipVel);
@@ -1166,7 +1154,7 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
             Vec3 initialVel = forward.scale(initialSpeed);
             this.setDeltaMovement(initialVel.add(shipVelocity));
         }
-        
+
         return true;
     }
 
@@ -1174,7 +1162,7 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         if (!this.level().isClientSide && !hasDetonated) {
             hasDetonated = true;
             releaseChunkLoad();
-            
+
             switch (warheadType) {
                 case HEAT:
                     performHeatDetonation(pos);
@@ -1189,7 +1177,7 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
             }
         }
     }
-    
+
     protected void performHeDetonation(Vec3 pos) {
         MissileDebugRenderer.addExplosion(pos, explosionPower, DebugColor.RED);
         
@@ -1604,17 +1592,10 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
             this.modelItem = ItemStack.of(compound.getCompound("ModelItem"));
         }
         if (compound.contains("PlacementX")) {
-            this.placementBlockPos = new BlockPos(
+            this.placementPos = new Vec3(
                 compound.getInt("PlacementX"),
                 compound.getInt("PlacementY"),
                 compound.getInt("PlacementZ")
-            );
-        }
-        if (compound.contains("ShipLocalX")) {
-            this.shipLocalPosition = new Vec3(
-                compound.getDouble("ShipLocalX"),
-                compound.getDouble("ShipLocalY"),
-                compound.getDouble("ShipLocalZ")
             );
         }
         this.shipLocalYaw = compound.getFloat("ShipLocalYaw");
@@ -1644,15 +1625,10 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
             compound.put("Fuze", this.fuze.save(new CompoundTag()));
         }
         compound.put("ModelItem", this.modelItem.save(new CompoundTag()));
-        if (this.placementBlockPos != null) {
-            compound.putInt("PlacementX", this.placementBlockPos.getX());
-            compound.putInt("PlacementY", this.placementBlockPos.getY());
-            compound.putInt("PlacementZ", this.placementBlockPos.getZ());
-        }
-        if (this.shipLocalPosition != null) {
-            compound.putDouble("ShipLocalX", this.shipLocalPosition.x);
-            compound.putDouble("ShipLocalY", this.shipLocalPosition.y);
-            compound.putDouble("ShipLocalZ", this.shipLocalPosition.z);
+        if (this.placementPos != null) {
+            compound.putDouble("PlacementX", this.placementPos.x);
+            compound.putDouble("PlacementY", this.placementPos.z);
+            compound.putDouble("PlacementZ", this.placementPos.z);
         }
         compound.putFloat("ShipLocalYaw", this.shipLocalYaw);
         compound.putFloat("ShipLocalPitch", this.shipLocalPitch);
