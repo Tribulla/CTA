@@ -86,6 +86,7 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
     public static final int NOCLIP_TICKS = 5;
     
     protected boolean lastPowered = false;
+    protected boolean neighborLaunched = false;
     protected int ticksSinceLaunch = 0;
     protected int fuel = 120;
     protected float explosionPower = 4.0f;
@@ -306,10 +307,12 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         if (!this.level().isClientSide && !isDeployed()) {
             BlockPos missileBlockPos = BlockPos.containing(placementPos);
             boolean powered = VSCompat.hasRedstoneSignal(this.level(), missileBlockPos, this.position());
-            if (powered && !lastPowered) {
+            if (powered && !lastPowered && !neighborLaunched) {
                 launch();
+                notifyNeighborMissiles();
             }
             lastPowered = powered;
+            neighborLaunched = false;
         }
         
         if (isDeployed()) {
@@ -389,6 +392,12 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
                 }
             }
         }
+    }
+
+    protected void notifyNeighborMissiles() {
+        AABB searchAABB = AABB.unitCubeFromLowerCorner(Vec3.atLowerCornerOf(blockPosition())).inflate(1);
+        List<MissileEntity> missiles = this.level().getEntitiesOfClass(MissileEntity.class, searchAABB, (e) -> e != this);
+        missiles.forEach(m -> m.neighborLaunched = true);
     }
     
     protected boolean handleFuseLogic() {
