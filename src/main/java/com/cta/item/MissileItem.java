@@ -63,9 +63,9 @@ public class MissileItem extends Item {
             
             Vec3 clickPos = context.getClickLocation();
             Vec3 localSpawnPos = clickPos.add(
-                face.getStepX() * (HITBOX.x / 2) - HITBOX.x / 2,
+                face.getStepX() * (HITBOX.x / 2),
                 face.getStepY() * (HITBOX.y / 2) - HITBOX.y / 2,
-                face.getStepZ() * (HITBOX.z / 2) - HITBOX.z / 2
+                face.getStepZ() * (HITBOX.z / 2)
             );
 
             MissileEntity missile = ModEntities.MISSILE.get().create(level);
@@ -88,6 +88,8 @@ public class MissileItem extends Item {
 
                 float snappedLocalYaw = snapToNearest90(localYaw);
                 float snappedLocalPitch = snapToCardinalPitch(localPitch);
+                if (snappedLocalPitch < 0)
+                    snappedLocalYaw = (snappedLocalYaw + 180) % 360;
 
                 missile.setShipLocalRotation(snappedLocalYaw, snappedLocalPitch);
                 missile.setShipLocalRoll(0.0f);
