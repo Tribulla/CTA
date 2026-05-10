@@ -77,6 +77,7 @@ public class MissileItem extends Item {
                 
                 missile.setMissileId(this.missileId, this.warheadType);
 
+                missile.setControllerPos(clickedBlockPos);
                 missile.setPlacementPos(localSpawnPos);
                 missile.setAttachedToShip(VSCompat.isOnShip(level, clickedBlockPos));
                 
