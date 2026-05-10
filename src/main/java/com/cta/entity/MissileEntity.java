@@ -48,8 +48,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.world.ForgeChunkManager;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkHooks;
 
 public class MissileEntity extends Entity implements IEntityAdditionalSpawnData {
@@ -355,7 +357,9 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
                     case HEFRAG -> DebugColor.YELLOW;
                     default -> DebugColor.RED;
                 };
-                MissileDebugRenderer.addFlightPoint(this.getId(), this.position(), color);
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                    MissileDebugRenderer.addFlightPoint(this.getId(), this.position(), color);
+                });
             }
             
             applyMissilePhysics();
@@ -1199,8 +1203,10 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
     }
 
     protected void performHeDetonation(Vec3 pos) {
-        MissileDebugRenderer.addExplosion(pos, explosionPower, DebugColor.RED);
-        
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            MissileDebugRenderer.addExplosion(pos, explosionPower, DebugColor.RED);
+        });
+
         this.discard();
         this.level().explode(null, pos.x, pos.y, pos.z, explosionPower, Level.ExplosionInteraction.TNT);
     }
@@ -1291,14 +1297,19 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         }
         
         boolean succeeded = passedThroughArmor && reachedAir;
-        MissileDebugRenderer.addPenetrationPath(pos, jetEndPos, succeeded);
-        
+        Vec3 finalJetEndPos = jetEndPos;
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            MissileDebugRenderer.addPenetrationPath(pos, finalJetEndPos, succeeded);
+        });
+
         this.discard();
         
         if (passedThroughArmor && reachedAir) {
             float behindArmorPower = Math.max(2.0f, baseExplosionPower * 0.5f);
-            MissileDebugRenderer.addExplosion(jetEndPos, behindArmorPower, DebugColor.ORANGE);
-            
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                MissileDebugRenderer.addExplosion(finalJetEndPos, behindArmorPower, DebugColor.ORANGE);
+            });
+
             this.level().explode(null, jetEndPos.x, jetEndPos.y, jetEndPos.z, 
                     behindArmorPower, Level.ExplosionInteraction.TNT);
             
@@ -1306,7 +1317,9 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
                 createSpallCone(serverLevel, jetEndPos, penetrationDirection);
             }
         } else if (!passedThroughArmor) {
-            MissileDebugRenderer.addExplosion(pos, Math.max(1.0f, baseExplosionPower * 0.2f), DebugColor.ORANGE);
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                MissileDebugRenderer.addExplosion(pos, Math.max(1.0f, baseExplosionPower * 0.2f), DebugColor.ORANGE);
+            });
             this.level().explode(null, pos.x, pos.y, pos.z,
                     Math.max(1.0f, baseExplosionPower * 0.2f), Level.ExplosionInteraction.TNT);
         }
@@ -1339,8 +1352,10 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
     }
     
     protected void performHefragDetonation(Vec3 pos) {
-        MissileDebugRenderer.addExplosion(pos, explosionPower, DebugColor.YELLOW);
-        
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            MissileDebugRenderer.addExplosion(pos, explosionPower, DebugColor.YELLOW);
+        });
+
         this.level().explode(null, pos.x, pos.y, pos.z, explosionPower, Level.ExplosionInteraction.TNT);
         
         if (this.level() instanceof ServerLevel serverLevel) {
@@ -1401,7 +1416,9 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
             level.addFreshEntity(fragment);
             
             if (i % 5 == 0) {
-                MissileDebugRenderer.addFragment(detonationPos, fragDir, fragRange, false);
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                    MissileDebugRenderer.addFragment(detonationPos, fragDir, fragRange, false);
+                });
             }
         }
         
