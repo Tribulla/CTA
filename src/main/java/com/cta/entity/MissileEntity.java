@@ -319,8 +319,8 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
             this.xRotO = this.getXRot();
         }
         
-        if (!this.level().isClientSide && !isDeployed()) {
-            boolean powered = VSCompat.hasRedstoneSignal(this.level(), controllerPos, this.position());
+        if (!this.level().isClientSide && !isDeployed() && controllerPos != null) {
+            boolean powered = this.level().hasNeighborSignal(controllerPos);
             if (powered && !lastPowered && !neighborLaunched) {
                 launch();
                 notifyNeighborMissiles();
