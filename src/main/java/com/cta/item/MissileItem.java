@@ -69,17 +69,23 @@ public class MissileItem extends Item {
                 face.getStepZ() * 1.001 * (HITBOX.z / 2)
             );
 
+            BlockPos missilePos = BlockPos.containing(localSpawnPos);
+            Direction controllerDir = null;
+            if (!missilePos.equals(clickedBlockPos)) {
+                Vec3 diff = Vec3.atLowerCornerOf(clickedBlockPos).subtract(Vec3.atLowerCornerOf(missilePos));
+                controllerDir = Direction.getNearest(diff.x, diff.y, diff.z);
+                System.out.println(controllerDir);
+            }
+
             MissileEntity missile = ModEntities.MISSILE.get().create(level);
             if (missile != null) {
-                missile.setPos(localSpawnPos.x, localSpawnPos.y, localSpawnPos.z);
+                missile.setPos(localSpawnPos);
                 missile.modelItem = context.getItemInHand().copy();
                 missile.modelItem.setCount(1);
                 
                 missile.setMissileId(this.missileId, this.warheadType);
-
-                missile.setControllerPos(clickedBlockPos);
-                missile.setPlacementPos(localSpawnPos);
                 missile.setAttachedToShip(VSCompat.isOnShip(level, clickedBlockPos));
+                missile.setControllerDir(controllerDir);
                 
                 float playerYaw = context.getPlayer() != null ? context.getPlayer().getYRot() : context.getRotation();
                 float playerPitch = context.getPlayer() != null ? context.getPlayer().getXRot() : 0;
