@@ -74,7 +74,6 @@ public class MissileItem extends Item {
             if (!missilePos.equals(clickedBlockPos)) {
                 Vec3 diff = Vec3.atLowerCornerOf(clickedBlockPos).subtract(Vec3.atLowerCornerOf(missilePos));
                 controllerDir = Direction.getNearest(diff.x, diff.y, diff.z);
-                System.out.println(controllerDir);
             }
 
             MissileEntity missile = ModEntities.MISSILE.get().create(level);
