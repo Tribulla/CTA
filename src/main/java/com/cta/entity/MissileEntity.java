@@ -143,10 +143,6 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
     @Nullable
     protected Direction controllerDir;
 
-    protected float shipLocalYaw = 0.0f;
-    protected float shipLocalPitch = 0.0f;
-    protected float shipLocalRoll = 0.0f;
-    
     protected boolean hasImpacted = false;
     protected int impactDelayTicks = 0;
 
@@ -244,24 +240,18 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         }
     }
 
-    public void setStoredRotation(float yaw, float pitch) {
+    public void setStoredRotation(float yaw, float pitch, float roll) {
         this.entityData.set(DATA_YAW, yaw);
         this.entityData.set(DATA_PITCH, pitch);
+        this.entityData.set(DATA_ROLL, roll);
         this.setYRot(yaw);
         this.setXRot(pitch);
-    }
-
-    public void setShipLocalRotation(float yaw, float pitch) {
-        this.shipLocalYaw = yaw;
-        this.shipLocalPitch = pitch;
+        this.yRotO = yaw;
+        this.xRotO = pitch;
     }
 
     public void setControllerDir(@Nullable Direction controllerDir) {
         this.controllerDir = controllerDir;
-    }
-
-    public void setShipLocalRoll(float roll) {
-        this.shipLocalRoll = roll;
     }
 
     public float getStoredYaw() {
@@ -288,22 +278,6 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
     public void tick() {
         super.tick();
 
-        if (!isDeployed() && isAttachedToShip()) {
-            this.entityData.set(DATA_YAW, shipLocalYaw);
-            this.entityData.set(DATA_PITCH, shipLocalPitch);
-            this.entityData.set(DATA_ROLL, shipLocalRoll);
-            this.setYRot(shipLocalYaw);
-            this.setXRot(shipLocalPitch);
-
-            this.yRotO = this.getYRot();
-            this.xRotO = this.getXRot();
-        } else if (!isDeployed()) {
-            this.setYRot(getStoredYaw());
-            this.setXRot(getStoredPitch());
-            this.yRotO = this.getYRot();
-            this.xRotO = this.getXRot();
-        }
-        
         if (!this.level().isClientSide && !isDeployed()) {
             boolean powered = this.level().hasNeighborSignal(controllerDir == null ? blockPosition() : blockPosition().relative(controllerDir));
             if (powered && !lastPowered && !neighborLaunched) {
@@ -1134,8 +1108,8 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
             launchPos = VSCompat.toWorldCoordinates(this.level(), blockPosition(), position());
             shipVelocity = VSCompat.getShipVelocityAtPoint(this.level(), blockPosition(), launchPos);
 
-            float worldYaw = VSCompat.transformYawToWorld(this.level(), blockPosition(), shipLocalYaw);
-            float worldPitch = VSCompat.transformPitchToWorld(this.level(), blockPosition(), shipLocalYaw, shipLocalPitch);
+            float worldYaw = VSCompat.transformYawToWorld(this.level(), blockPosition(), this.getStoredYaw());
+            float worldPitch = VSCompat.transformPitchToWorld(this.level(), blockPosition(), this.getStoredYaw(), this.getStoredPitch());
 
             this.setPos(launchPos.x, launchPos.y, launchPos.z);
             this.setYRot(worldYaw);
@@ -1488,14 +1462,12 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
                     float newPitch = getStoredPitch() + delta;
                     if (newPitch > 90) newPitch = -90 + (newPitch - 90);
                     if (newPitch < -90) newPitch = 90 + (newPitch + 90);
-                    setStoredRotation(getStoredYaw(), newPitch);
-                    this.shipLocalPitch = newPitch;
+                    setStoredRotation(getStoredYaw(), newPitch, getStoredRoll());
                 } else {
                     float newYaw = getStoredYaw() + delta;
                     if (newYaw >= 360) newYaw -= 360;
                     if (newYaw < 0) newYaw += 360;
-                    setStoredRotation(newYaw, getStoredPitch());
-                    this.shipLocalYaw = newYaw;
+                    setStoredRotation(newYaw, getStoredPitch(), getStoredRoll());
                 }
                 return InteractionResult.SUCCESS;
             }
@@ -1615,10 +1587,7 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         if (compound.contains("ControllerDir")) {
             controllerDir = Direction.values()[compound.getInt("ControllerDir")];
         }
-        this.shipLocalYaw = compound.getFloat("ShipLocalYaw");
-        this.shipLocalPitch = compound.getFloat("ShipLocalPitch");
-        this.shipLocalRoll = compound.getFloat("ShipLocalRoll");
-        
+
         if (compound.contains("AttachedToShip")) {
             this.entityData.set(DATA_ATTACHED_TO_SHIP, compound.getBoolean("AttachedToShip"));
         }
@@ -1645,10 +1614,7 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         if (this.controllerDir != null) {
             compound.putInt("ControllerDir", this.controllerDir.ordinal());
         }
-        compound.putFloat("ShipLocalYaw", this.shipLocalYaw);
-        compound.putFloat("ShipLocalPitch", this.shipLocalPitch);
-        compound.putFloat("ShipLocalRoll", this.shipLocalRoll);
-        
+
         compound.putBoolean("AttachedToShip", this.entityData.get(DATA_ATTACHED_TO_SHIP));
         
         compound.putBoolean("HasImpacted", this.hasImpacted);

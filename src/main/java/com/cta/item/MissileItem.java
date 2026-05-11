@@ -97,10 +97,7 @@ public class MissileItem extends Item {
                 if (snappedLocalPitch < 0)
                     snappedLocalYaw = (snappedLocalYaw + 180) % 360;
 
-                missile.setShipLocalRotation(snappedLocalYaw, snappedLocalPitch);
-                missile.setShipLocalRoll(0.0f);
-
-                missile.setStoredRotation(snappedLocalYaw, snappedLocalPitch);
+                missile.setStoredRotation(snappedLocalYaw, snappedLocalPitch, 0);
                 
                 level.addFreshEntity(missile);
                 context.getItemInHand().shrink(1);
