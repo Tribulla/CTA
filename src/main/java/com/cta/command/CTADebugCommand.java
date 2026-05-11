@@ -7,8 +7,10 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = CTA.MODID)
@@ -40,7 +42,7 @@ public class CTADebugCommand {
                         context.getSource().sendSuccess(() -> 
                             Component.literal("CTA Debug mode: " + (debugEnabled ? "§aON" : "§cOFF")), true);
                         if (!debugEnabled) {
-                            MissileDebugRenderer.clearAll();
+                            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> MissileDebugRenderer::clearAll);
                         }
                         return 1;
                     })
@@ -50,7 +52,7 @@ public class CTADebugCommand {
                             context.getSource().sendSuccess(() -> 
                                 Component.literal("CTA Debug mode: " + (debugEnabled ? "§aON" : "§cOFF")), true);
                             if (!debugEnabled) {
-                                MissileDebugRenderer.clearAll();
+                                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> MissileDebugRenderer::clearAll);
                             }
                             return 1;
                         })
@@ -59,8 +61,8 @@ public class CTADebugCommand {
                 .then(Commands.literal("clear")
                     .requires(source -> source.hasPermission(2))
                     .executes(context -> {
-                        MissileDebugRenderer.clearAll();
-                        context.getSource().sendSuccess(() -> 
+                        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> MissileDebugRenderer::clearAll);
+                        context.getSource().sendSuccess(() ->
                             Component.literal("§eCleared all debug visualizations"), true);
                         return 1;
                     })

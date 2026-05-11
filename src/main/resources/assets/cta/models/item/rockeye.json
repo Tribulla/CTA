@@ -1,15 +1,10 @@
 {
+	"format_version": "1.21.11",
 	"credit": "made_with_blockbench",
 	"texture_size": [64, 64],
 	"textures": {
 		"2": "cta:item/rockeye_he_texture",
 		"particle": "cta:item/rockeye_he_texture"
-	},
-	"display": {
-		"fixed": {
-			"rotation": [0, 90, 0],
-			"scale": [1, 1, 1]
-		}
 	},
 	"elements": [
 		{
@@ -188,8 +183,8 @@
 			"translation": [0, 5.75, 0]
 		},
 		"gui": {
-			"rotation": [30, 225, 0],
-			"translation": [0.5, 1, 0],
+			"rotation": [30, -135, 0],
+			"translation": [0.5, 0.5, 0],
 			"scale": [0.35, 0.35, 0.35]
 		},
 		"head": {
@@ -206,23 +201,27 @@
 		{
 			"name": "guidance",
 			"origin": [8, 3, -18.5],
+			"scope": 0,
 			"color": 0,
 			"children": [0, 1]
 		},
 		{
 			"name": "body",
 			"origin": [8, 3, 19.5],
+			"scope": 0,
 			"color": 0,
 			"children": [2, 3, 4, 5, 6]
 		},
 		{
 			"name": "fins",
 			"origin": [8, 8, 8],
+			"scope": 0,
 			"color": 0,
 			"children": [
 				{
 					"name": "rear",
 					"origin": [8, 3, 19.5],
+					"scope": 0,
 					"color": 0,
 					"children": [7, 8, 9, 10]
 				}
@@ -230,4 +229,3 @@
 		}
 	]
 }
-

@@ -24,7 +24,9 @@ public class MissileItem extends Item {
     public final String missileId;
     public final boolean isBomb;
     public final WarheadType warheadType;
-    
+
+    private static final Vec3 HITBOX = new Vec3(0.5, 0.5, 0.5);
+
     public MissileItem(Properties properties) {
         super(properties);
         this.missileId = "";
@@ -62,22 +64,27 @@ public class MissileItem extends Item {
             
             Vec3 clickPos = context.getClickLocation();
             Vec3 localSpawnPos = clickPos.add(
-                face.getStepX() * 0.05,
-                face.getStepY() * 0.05,
-                face.getStepZ() * 0.05
+                face.getStepX() * 1.001 * (HITBOX.x / 2),
+                face.getStepY() * 1.001 * (HITBOX.y / 2) - HITBOX.y / 2,
+                face.getStepZ() * 1.001 * (HITBOX.z / 2)
             );
-            
+
+            BlockPos missilePos = BlockPos.containing(localSpawnPos);
+            Direction controllerDir = null;
+            if (!missilePos.equals(clickedBlockPos)) {
+                Vec3 diff = Vec3.atLowerCornerOf(clickedBlockPos).subtract(Vec3.atLowerCornerOf(missilePos));
+                controllerDir = Direction.getNearest(diff.x, diff.y, diff.z);
+            }
+
             MissileEntity missile = ModEntities.MISSILE.get().create(level);
             if (missile != null) {
-                missile.setPos(localSpawnPos.x, localSpawnPos.y, localSpawnPos.z);
+                missile.setPos(localSpawnPos);
                 missile.modelItem = context.getItemInHand().copy();
                 missile.modelItem.setCount(1);
                 
                 missile.setMissileId(this.missileId, this.warheadType);
-                
-                missile.setPlacementBlockPos(clickedBlockPos);
-                missile.setShipLocalPosition(localSpawnPos);
                 missile.setAttachedToShip(VSCompat.isOnShip(level, clickedBlockPos));
+                missile.setControllerDir(controllerDir);
                 
                 float playerYaw = context.getPlayer() != null ? context.getPlayer().getYRot() : context.getRotation();
                 float playerPitch = context.getPlayer() != null ? context.getPlayer().getXRot() : 0;
@@ -87,11 +94,10 @@ public class MissileItem extends Item {
 
                 float snappedLocalYaw = snapToNearest90(localYaw);
                 float snappedLocalPitch = snapToCardinalPitch(localPitch);
+                if (snappedLocalPitch < 0)
+                    snappedLocalYaw = (snappedLocalYaw + 180) % 360;
 
-                missile.setShipLocalRotation(snappedLocalYaw, snappedLocalPitch);
-                missile.setShipLocalRoll(0.0f);
-
-                missile.setStoredRotation(snappedLocalYaw, snappedLocalPitch);
+                missile.setStoredRotation(snappedLocalYaw, snappedLocalPitch, 0);
                 
                 level.addFreshEntity(missile);
                 context.getItemInHand().shrink(1);

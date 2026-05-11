@@ -31,17 +31,19 @@ public class MissileRenderer extends EntityRenderer<MissileEntity> {
         if (modelItem.isEmpty()) {
             return;
         }
-        
+
         poseStack.pushPose();
-        
+
         float yaw = Mth.lerp(partialTicks, entity.yRotO, entity.getYRot());
         float pitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
         float roll = 0.0f; // needs to be unbfucked later if I remember about it
-        
+
+        poseStack.translate(0, 0.25, 0);
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0f - yaw));
         poseStack.mulPose(Axis.XP.rotationDegrees(-pitch));
         poseStack.mulPose(Axis.ZP.rotationDegrees(roll));
-        
+        poseStack.translate(0, 0.25, 0);
+
         float scale = 1.0f;
         if (entity.isDeployed()) {
             scale = getVelocityBasedScale(entity.getDeltaMovement());
@@ -50,7 +52,7 @@ public class MissileRenderer extends EntityRenderer<MissileEntity> {
         
         this.itemRenderer.renderStatic(
             modelItem, 
-            ItemDisplayContext.GROUND, 
+            ItemDisplayContext.NONE,
             packedLight, 
             OverlayTexture.NO_OVERLAY, 
             poseStack, 
@@ -70,6 +72,6 @@ public class MissileRenderer extends EntityRenderer<MissileEntity> {
 
     @Override
     public ResourceLocation getTextureLocation(MissileEntity entity) {
-        return new ResourceLocation("cta", "textures/item/missile.png");
+        return ResourceLocation.fromNamespaceAndPath("cta", "textures/item/missile.png");
     }
 }

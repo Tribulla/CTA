@@ -20,6 +20,7 @@ import com.cta.config.MissileConfig.MissileCategory;
 import com.cta.config.MissileConfig.MissileTypeConfig;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -48,8 +49,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.world.ForgeChunkManager;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkHooks;
 
 public class MissileEntity extends Entity implements IEntityAdditionalSpawnData {
@@ -86,6 +89,7 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
     public static final int NOCLIP_TICKS = 5;
     
     protected boolean lastPowered = false;
+    protected boolean neighborLaunched = false;
     protected int ticksSinceLaunch = 0;
     protected int fuel = 120;
     protected float explosionPower = 4.0f;
@@ -135,15 +139,10 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
     protected double fragRange = 10.0;
     
     protected ChunkPos lastForcedChunk = null;
-    
+
     @Nullable
-    protected BlockPos placementBlockPos = null;
-    @Nullable
-    protected Vec3 shipLocalPosition = null;
-    protected float shipLocalYaw = 0.0f;
-    protected float shipLocalPitch = 0.0f;
-    protected float shipLocalRoll = 0.0f;
-    
+    protected Direction controllerDir;
+
     protected boolean hasImpacted = false;
     protected int impactDelayTicks = 0;
 
@@ -241,36 +240,18 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         }
     }
 
-    public void setStoredRotation(float yaw, float pitch) {
+    public void setStoredRotation(float yaw, float pitch, float roll) {
         this.entityData.set(DATA_YAW, yaw);
         this.entityData.set(DATA_PITCH, pitch);
+        this.entityData.set(DATA_ROLL, roll);
         this.setYRot(yaw);
         this.setXRot(pitch);
+        this.yRotO = yaw;
+        this.xRotO = pitch;
     }
-    
-    public void setPlacementBlockPos(@Nullable BlockPos pos) {
-        this.placementBlockPos = pos;
-        if (pos != null) {
-            this.shipLocalPosition = new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-        }
-    }
-    
-    public void setShipLocalPosition(@Nullable Vec3 pos) {
-        this.shipLocalPosition = pos;
-    }
-    
-    public void setShipLocalRotation(float yaw, float pitch) {
-        this.shipLocalYaw = yaw;
-        this.shipLocalPitch = pitch;
-    }
-    
-    public void setShipLocalRoll(float roll) {
-        this.shipLocalRoll = roll;
-    }
-    
-    @Nullable
-    public BlockPos getPlacementBlockPos() {
-        return this.placementBlockPos;
+
+    public void setControllerDir(@Nullable Direction controllerDir) {
+        this.controllerDir = controllerDir;
     }
 
     public float getStoredYaw() {
@@ -296,31 +277,15 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
     @Override
     public void tick() {
         super.tick();
-        
-        if (!isDeployed() && isAttachedToShip()) {
-            if (shipLocalPosition != null && placementBlockPos != null) {
-                this.entityData.set(DATA_YAW, shipLocalYaw);
-                this.entityData.set(DATA_PITCH, shipLocalPitch);
-                this.entityData.set(DATA_ROLL, shipLocalRoll);
-                this.setYRot(shipLocalYaw);
-                this.setXRot(shipLocalPitch);
 
-                this.yRotO = this.getYRot();
-                this.xRotO = this.getXRot();
-            }
-        } else if (!isDeployed()) {
-            this.setYRot(getStoredYaw());
-            this.setXRot(getStoredPitch());
-            this.yRotO = this.getYRot();
-            this.xRotO = this.getXRot();
-        }
-        
-        if (!this.level().isClientSide) {
-            boolean powered = VSCompat.hasRedstoneSignal(this.level(), this.placementBlockPos, this.position());
-            if (powered && !lastPowered && !isDeployed()) {
+        if (!this.level().isClientSide && !isDeployed()) {
+            boolean powered = this.level().hasNeighborSignal(controllerDir == null ? blockPosition() : blockPosition().relative(controllerDir));
+            if (powered && !lastPowered && !neighborLaunched) {
                 launch();
+                notifyNeighborMissiles();
             }
             lastPowered = powered;
+            neighborLaunched = false;
         }
         
         if (isDeployed()) {
@@ -351,7 +316,9 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
                     case HEFRAG -> DebugColor.YELLOW;
                     default -> DebugColor.RED;
                 };
-                MissileDebugRenderer.addFlightPoint(this.getId(), this.position(), color);
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                    MissileDebugRenderer.addFlightPoint(this.getId(), this.position(), color);
+                });
             }
             
             applyMissilePhysics();
@@ -400,6 +367,12 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
                 }
             }
         }
+    }
+
+    protected void notifyNeighborMissiles() {
+        AABB searchAABB = AABB.unitCubeFromLowerCorner(Vec3.atLowerCornerOf(blockPosition())).inflate(1);
+        List<MissileEntity> missiles = this.level().getEntitiesOfClass(MissileEntity.class, searchAABB, (e) -> e != this);
+        missiles.forEach(m -> m.neighborLaunched = true);
     }
     
     protected boolean handleFuseLogic() {
@@ -1127,46 +1100,43 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
 
     public boolean launch() {
         if (isDeployed()) return false;
-        
-        BlockPos referencePos = placementBlockPos != null ? placementBlockPos : this.blockPosition();
+
         Vec3 launchPos = this.position();
         Vec3 shipVelocity = Vec3.ZERO;
         
-        if (isAttachedToShip() && shipLocalPosition != null && placementBlockPos != null) {
-            launchPos = VSCompat.toWorldCoordinates(this.level(), placementBlockPos, shipLocalPosition);
-            
-            shipVelocity = VSCompat.getShipVelocityAtPoint(this.level(), referencePos, launchPos);
-            
-            float worldYaw = VSCompat.transformYawToWorld(this.level(), placementBlockPos, shipLocalYaw);
-            float worldPitch = VSCompat.transformPitchToWorld(this.level(), placementBlockPos, shipLocalYaw, shipLocalPitch);
-            
+        if (isAttachedToShip()) {
+            launchPos = VSCompat.toWorldCoordinates(this.level(), blockPosition(), position());
+            shipVelocity = VSCompat.getShipVelocityAtPoint(this.level(), blockPosition(), launchPos);
+
+            float worldYaw = VSCompat.transformYawToWorld(this.level(), blockPosition(), this.getStoredYaw());
+            float worldPitch = VSCompat.transformPitchToWorld(this.level(), blockPosition(), this.getStoredYaw(), this.getStoredPitch());
+
             this.setPos(launchPos.x, launchPos.y, launchPos.z);
             this.setYRot(worldYaw);
             this.setXRot(worldPitch);
             this.yRotO = worldYaw;
             this.xRotO = worldPitch;
-            
+
             this.entityData.set(DATA_YAW, worldYaw);
             this.entityData.set(DATA_PITCH, worldPitch);
         }
-        
+
         this.setAttachedToShip(false);
-        this.shipLocalPosition = null;
         this.entityData.set(DATA_DEPLOYED, true);
         this.ticksSinceLaunch = 0;
-        
+
+        this.controllerDir = null;
         this.launchWorldPos = launchPos;
-        
+
         Vec3 forward = getForwardVector();
-        
+
         if (isBomb) {
-            Vec3 horizontalShipVel = new Vec3(shipVelocity.x, 0, shipVelocity.z);
-            this.setDeltaMovement(horizontalShipVel);
+            this.setDeltaMovement(shipVelocity);
         } else {
             Vec3 initialVel = forward.scale(initialSpeed);
             this.setDeltaMovement(initialVel.add(shipVelocity));
         }
-        
+
         return true;
     }
 
@@ -1174,7 +1144,7 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         if (!this.level().isClientSide && !hasDetonated) {
             hasDetonated = true;
             releaseChunkLoad();
-            
+
             switch (warheadType) {
                 case HEAT:
                     performHeatDetonation(pos);
@@ -1189,10 +1159,12 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
             }
         }
     }
-    
+
     protected void performHeDetonation(Vec3 pos) {
-        MissileDebugRenderer.addExplosion(pos, explosionPower, DebugColor.RED);
-        
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            MissileDebugRenderer.addExplosion(pos, explosionPower, DebugColor.RED);
+        });
+
         this.discard();
         this.level().explode(null, pos.x, pos.y, pos.z, explosionPower, Level.ExplosionInteraction.TNT);
     }
@@ -1283,14 +1255,19 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         }
         
         boolean succeeded = passedThroughArmor && reachedAir;
-        MissileDebugRenderer.addPenetrationPath(pos, jetEndPos, succeeded);
-        
+        Vec3 finalJetEndPos = jetEndPos;
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            MissileDebugRenderer.addPenetrationPath(pos, finalJetEndPos, succeeded);
+        });
+
         this.discard();
         
         if (passedThroughArmor && reachedAir) {
             float behindArmorPower = Math.max(2.0f, baseExplosionPower * 0.5f);
-            MissileDebugRenderer.addExplosion(jetEndPos, behindArmorPower, DebugColor.ORANGE);
-            
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                MissileDebugRenderer.addExplosion(finalJetEndPos, behindArmorPower, DebugColor.ORANGE);
+            });
+
             this.level().explode(null, jetEndPos.x, jetEndPos.y, jetEndPos.z, 
                     behindArmorPower, Level.ExplosionInteraction.TNT);
             
@@ -1298,7 +1275,9 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
                 createSpallCone(serverLevel, jetEndPos, penetrationDirection);
             }
         } else if (!passedThroughArmor) {
-            MissileDebugRenderer.addExplosion(pos, Math.max(1.0f, baseExplosionPower * 0.2f), DebugColor.ORANGE);
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                MissileDebugRenderer.addExplosion(pos, Math.max(1.0f, baseExplosionPower * 0.2f), DebugColor.ORANGE);
+            });
             this.level().explode(null, pos.x, pos.y, pos.z,
                     Math.max(1.0f, baseExplosionPower * 0.2f), Level.ExplosionInteraction.TNT);
         }
@@ -1331,8 +1310,10 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
     }
     
     protected void performHefragDetonation(Vec3 pos) {
-        MissileDebugRenderer.addExplosion(pos, explosionPower, DebugColor.YELLOW);
-        
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            MissileDebugRenderer.addExplosion(pos, explosionPower, DebugColor.YELLOW);
+        });
+
         this.level().explode(null, pos.x, pos.y, pos.z, explosionPower, Level.ExplosionInteraction.TNT);
         
         if (this.level() instanceof ServerLevel serverLevel) {
@@ -1393,7 +1374,9 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
             level.addFreshEntity(fragment);
             
             if (i % 5 == 0) {
-                MissileDebugRenderer.addFragment(detonationPos, fragDir, fragRange, false);
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                    MissileDebugRenderer.addFragment(detonationPos, fragDir, fragRange, false);
+                });
             }
         }
         
@@ -1479,14 +1462,12 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
                     float newPitch = getStoredPitch() + delta;
                     if (newPitch > 90) newPitch = -90 + (newPitch - 90);
                     if (newPitch < -90) newPitch = 90 + (newPitch + 90);
-                    setStoredRotation(getStoredYaw(), newPitch);
-                    this.shipLocalPitch = newPitch;
+                    setStoredRotation(getStoredYaw(), newPitch, getStoredRoll());
                 } else {
                     float newYaw = getStoredYaw() + delta;
                     if (newYaw >= 360) newYaw -= 360;
                     if (newYaw < 0) newYaw += 360;
-                    setStoredRotation(newYaw, getStoredPitch());
-                    this.shipLocalYaw = newYaw;
+                    setStoredRotation(newYaw, getStoredPitch(), getStoredRoll());
                 }
                 return InteractionResult.SUCCESS;
             }
@@ -1603,24 +1584,10 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
         if (compound.contains("ModelItem")) {
             this.modelItem = ItemStack.of(compound.getCompound("ModelItem"));
         }
-        if (compound.contains("PlacementX")) {
-            this.placementBlockPos = new BlockPos(
-                compound.getInt("PlacementX"),
-                compound.getInt("PlacementY"),
-                compound.getInt("PlacementZ")
-            );
+        if (compound.contains("ControllerDir")) {
+            controllerDir = Direction.values()[compound.getInt("ControllerDir")];
         }
-        if (compound.contains("ShipLocalX")) {
-            this.shipLocalPosition = new Vec3(
-                compound.getDouble("ShipLocalX"),
-                compound.getDouble("ShipLocalY"),
-                compound.getDouble("ShipLocalZ")
-            );
-        }
-        this.shipLocalYaw = compound.getFloat("ShipLocalYaw");
-        this.shipLocalPitch = compound.getFloat("ShipLocalPitch");
-        this.shipLocalRoll = compound.getFloat("ShipLocalRoll");
-        
+
         if (compound.contains("AttachedToShip")) {
             this.entityData.set(DATA_ATTACHED_TO_SHIP, compound.getBoolean("AttachedToShip"));
         }
@@ -1644,20 +1611,10 @@ public class MissileEntity extends Entity implements IEntityAdditionalSpawnData 
             compound.put("Fuze", this.fuze.save(new CompoundTag()));
         }
         compound.put("ModelItem", this.modelItem.save(new CompoundTag()));
-        if (this.placementBlockPos != null) {
-            compound.putInt("PlacementX", this.placementBlockPos.getX());
-            compound.putInt("PlacementY", this.placementBlockPos.getY());
-            compound.putInt("PlacementZ", this.placementBlockPos.getZ());
+        if (this.controllerDir != null) {
+            compound.putInt("ControllerDir", this.controllerDir.ordinal());
         }
-        if (this.shipLocalPosition != null) {
-            compound.putDouble("ShipLocalX", this.shipLocalPosition.x);
-            compound.putDouble("ShipLocalY", this.shipLocalPosition.y);
-            compound.putDouble("ShipLocalZ", this.shipLocalPosition.z);
-        }
-        compound.putFloat("ShipLocalYaw", this.shipLocalYaw);
-        compound.putFloat("ShipLocalPitch", this.shipLocalPitch);
-        compound.putFloat("ShipLocalRoll", this.shipLocalRoll);
-        
+
         compound.putBoolean("AttachedToShip", this.entityData.get(DATA_ATTACHED_TO_SHIP));
         
         compound.putBoolean("HasImpacted", this.hasImpacted);

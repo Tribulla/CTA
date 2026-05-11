@@ -200,12 +200,7 @@ public class VSCompat {
         
         return BlockPos.containing(worldPos);
     }
-    
-    public static boolean hasRedstoneSignal(Level level, @Nullable BlockPos placementPos, Vec3 worldPos) {
-        BlockPos checkPos = getShipLocalBlockPos(level, placementPos, worldPos);
-        return level.hasNeighborSignal(checkPos);
-    }
-    
+
     public static boolean updateEntityPositionOnShip(Entity entity, @Nullable BlockPos shipBlockPos, Vec3 shipLocalPos) {
         if (!isVSLoaded() || shipBlockPos == null) return false;
         

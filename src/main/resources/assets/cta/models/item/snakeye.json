@@ -1,15 +1,10 @@
 {
+	"format_version": "1.21.11",
 	"credit": "made_with_blockbench",
 	"texture_size": [64, 64],
 	"textures": {
 		"2": "cta:item/snakeye_he_texture",
 		"particle": "cta:item/snakeye_he_texture"
-	},
-	"display": {
-		"fixed": {
-			"rotation": [0, 90, 0],
-			"scale": [1, 1, 1]
-		}
 	},
 	"elements": [
 		{
@@ -183,11 +178,11 @@
 	],
 	"display": {
 		"thirdperson_righthand": {
-			"translation": [0, 4.25, 1],
+			"translation": [0, 4.75, 1],
 			"scale": [0.55, 0.55, 0.55]
 		},
 		"thirdperson_lefthand": {
-			"translation": [0, 4.25, 1],
+			"translation": [0, 4.75, 1],
 			"scale": [0.55, 0.55, 0.55]
 		},
 		"firstperson_righthand": {
@@ -199,11 +194,11 @@
 			"translation": [2.5, -6.75, 0]
 		},
 		"ground": {
-			"translation": [0, 5.75, 0]
+			"translation": [0, 5.25, 0]
 		},
 		"gui": {
-			"rotation": [30, 225, 0],
-			"translation": [0.25, 1.25, 0],
+			"rotation": [30, -135, 0],
+			"translation": [0.25, 0.75, 0],
 			"scale": [0.4, 0.4, 0.4]
 		},
 		"head": {
@@ -212,7 +207,7 @@
 		},
 		"fixed": {
 			"rotation": [90, 50, -90],
-			"translation": [1.5, 2.5, 0],
+			"translation": [1.5, 2, 0],
 			"scale": [0.6, 0.6, 0.6]
 		}
 	},
@@ -220,23 +215,27 @@
 		{
 			"name": "guidance",
 			"origin": [8, 3, -18.5],
+			"scope": 0,
 			"color": 0,
 			"children": [0, 1]
 		},
 		{
 			"name": "body",
 			"origin": [8, 3, 19.5],
+			"scope": 0,
 			"color": 0,
 			"children": [2, 3, 4, 5]
 		},
 		{
 			"name": "fins",
 			"origin": [8, 8, 8],
+			"scope": 0,
 			"color": 0,
 			"children": [
 				{
 					"name": "rear",
 					"origin": [8, 3, 19.5],
+					"scope": 0,
 					"color": 0,
 					"children": [6, 7, 8, 9, 10, 11]
 				}
@@ -244,4 +243,3 @@
 		}
 	]
 }
-
